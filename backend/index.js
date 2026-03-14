@@ -32,8 +32,20 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
+const allowedOrigins = [
+  'https://silver-wale.vercel.app',
+  process.env.CLIENT // e.g. http://localhost:5173
+].filter(Boolean);
+
 app.use(cors({
-  origin: 'https://silver-wale.vercel.app',
+  origin: function (origin, callback) {
+    // allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 

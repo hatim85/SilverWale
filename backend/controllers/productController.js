@@ -5,6 +5,31 @@ import Category from '../models/categoryModel.js';
 import { errorHandler } from '../utils/error.js';
 import { getMakingCharge, applyMakingChargeToProductDoc } from "../utils/pricing.js";
 import mongoose from 'mongoose';
+import fs from 'fs';
+import path from 'path';
+
+const UPLOAD_DIR = path.resolve(process.cwd(), '../frontend/public');
+
+/**
+ * Delete image files from the public folder.
+ * Silently ignores files that don't exist.
+ */
+function deleteImageFiles(filenames) {
+    console.log('[deleteImageFiles] Attempting to delete:', filenames);
+    console.log('[deleteImageFiles] UPLOAD_DIR:', UPLOAD_DIR);
+    for (const filename of filenames) {
+        if (!filename) continue;
+        const filePath = path.join(UPLOAD_DIR, filename);
+        console.log('[deleteImageFiles] Deleting file:', filePath);
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error(`[deleteImageFiles] Failed to delete ${filePath}:`, err.message);
+            } else {
+                console.log(`[deleteImageFiles] Successfully deleted: ${filename}`);
+            }
+        });
+    }
+}
 
 const router = express.Router();
 
@@ -195,9 +220,30 @@ export const updateProduct = async (req, res, next) => {
         if (price) product.price = price;
         if (stock !== undefined) product.stock = stock;
 
+        // Handle explicitly removed images (sent by frontend as JSON array of filenames)
+        if (req.body.removedImages) {
+            try {
+                const imagesToRemove = JSON.parse(req.body.removedImages);
+                if (Array.isArray(imagesToRemove) && imagesToRemove.length > 0) {
+                    // Delete the files from disk
+                    deleteImageFiles(imagesToRemove);
+                    // Remove them from the product's image array
+                    product.image = product.image.filter(img => !imagesToRemove.includes(img));
+                }
+            } catch (e) {
+                console.error('Failed to parse removedImages:', e.message);
+            }
+        }
+
+        // Handle new uploaded images
         if (req.files && req.files.length > 0) {
+            const oldImages = [...product.image]; // snapshot before update
             const filenames = req.files.map(file => file.filename);
             product.image = [...product.image, ...filenames].slice(-4); // keep latest up to 4
+
+            // Delete old images that are no longer in the updated list (pushed out by limit)
+            const pushedOut = oldImages.filter(img => !product.image.includes(img));
+            deleteImageFiles(pushedOut);
         }
 
         if (coverImageIndex !== undefined) {
@@ -226,13 +272,6 @@ export const deleteProduct = async (req, res, next) => {
 
         const categoryId = product.categoryId;
 
-        // // Remove product ID from the associated category's products array
-        // const category = await Category.findById(categoryId);
-        // if (category) {
-        //     category.products = category.products.filter(productId => productId.toString() !== req.params.productId);
-        //     await category.save();
-        // }
-
         if (!mongoose.Types.ObjectId.isValid(categoryId)) {
             return res.status(404).json({ message: 'Category not found' });
         }
@@ -241,6 +280,9 @@ export const deleteProduct = async (req, res, next) => {
             category.products = category.products.filter(productId => productId.toString() !== req.params.productId);
             await category.save();
         }
+
+        // Delete all product images from the public folder
+        deleteImageFiles(product.image);
 
         await Product.deleteOne({ _id: req.params.productId });
         res.status(200).json({ message: 'Product deleted' });
@@ -360,6 +402,10 @@ export const updateImages = async (req, res) => {
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
+
+        // Delete old images that are being replaced
+        const removedImages = product.image.filter(img => !filenames.includes(img));
+        deleteImageFiles(removedImages);
 
         product.image = filenames;
         if (product.coverImageIndex >= product.image.length) {
