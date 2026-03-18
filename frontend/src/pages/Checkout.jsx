@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import DummyHeader from '../components/DummyHeader';
+import Header from '../components/Header';
 import AddressCard from '../components/AddressCard';
 import { fetchCartItemsRequest, fetchCartItemsSuccess, fetchCartItemsFailure } from '../redux/slices/cartSlice';
 
@@ -173,7 +173,7 @@ function Checkout() {
 
     return (
         <>
-            <DummyHeader />
+            <Header />
             <AddressCard className='w-fit' onAddressSelect={setSelectedAddress} />
             <div className='max-w-4xl mx-auto p-6 bg-white rounded shadow-lg space-y-6'>
                 <h1 className='text-2xl font-semibold'>Checkout</h1>
@@ -223,7 +223,7 @@ function Checkout() {
                         <div className='border rounded p-4'>
                             <h2 className='text-lg font-semibold mb-2'>Payment Method</h2>
                             <div className='space-y-2'>
-                                <label className='flex items-center gap-2 cursor-pointer'>
+                                {/* <label className='flex items-center gap-2 cursor-pointer'>
                                     <input
                                         type='radio'
                                         name='paymentMethod'
@@ -232,7 +232,7 @@ function Checkout() {
                                         onChange={(e) => setPaymentMethod(e.target.value)}
                                     />
                                     <span>Pay Online (Razorpay)</span>
-                                </label>
+                                </label> */}
                                 <label className='flex items-center gap-2 cursor-pointer'>
                                     <input
                                         type='radio'

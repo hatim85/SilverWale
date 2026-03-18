@@ -4,8 +4,7 @@ import { deleteUserFailure, deleteUserStart, deleteUserSuccess, getUsersFailure,
 
 const Users = () => {
   const dispatch = useDispatch();
-  const { users } = useSelector(state => state.user)
-  const { loading, error } = useSelector((state) => state.user);
+  const { users, currentUser, loading, error } = useSelector(state => state.user);
   const [currentPage, setCurrentPage] = useState(1)
   const [totalUsers, setTotalUsers] = useState(0);
   const pageSize = 10
@@ -145,7 +144,11 @@ const Users = () => {
                 {user.userType}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button className="text-red-600 hover:text-red-900" onClick={() => handleDelete(user._id)}>Delete</button>
+                {currentUser && currentUser._id === user._id ? (
+                  <span className="text-gray-400 text-xs font-bold tracking-widest uppercase">You</span>
+                ) : (
+                  <button className="text-red-600 hover:text-red-900" onClick={() => handleDelete(user._id)}>Delete</button>
+                )}
               </td>
             </tr>
           ))}

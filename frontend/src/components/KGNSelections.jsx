@@ -1,44 +1,93 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import collage1 from '../../assets/collage_img_1.jpg';
 import collage2 from '../../assets/collage_img_2.jpg';
 import collage3 from '../../assets/collage_img_3.jpg';
 
 const KGNSelections = () => {
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const selections = [
+        { image: collage1, title: 'Silver Sleek', link: '/category/men' },
+        { image: collage2, title: 'Golden Radiance', link: '/category/ring' },
+        { image: collage3, title: 'Crystal Charm', link: '/category/earring' }
+    ];
+
     return (
-        <section className='w-full py-20 px-4 bg-white'>
-            <div className='max-w-7xl mx-auto'>
-                <div className='text-center mb-12'>
-                    <h2 className='text-3xl md:text-4xl font-serif tracking-[0.2em] text-black uppercase mb-3'>SilverWale Selections</h2>
-                    <p className='text-gray-500 font-light tracking-widest text-sm uppercase'>Explore our newly launched collection</p>
+        <section className='w-full pt-16 pb-24 md:pt-20 md:pb-32 px-4 bg-white'>
+            <div className='max-w-6xl mx-auto'>
+                <div className='text-center mb-16'>
+                    <h2 className='text-3xl md:text-4xl font-serif tracking-[0.3em] text-black uppercase section-title-premium'>SilverWale Selections</h2>
+                    <p className='text-gray-400 font-light tracking-[0.2em] text-[10px] md:text-xs uppercase mt-4'>A Curated Journey Through Excellence</p>
                 </div>
 
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
-                    <div className='overflow-hidden group cursor-pointer relative'>
-                        <img
-                            src={collage1}
-                            alt='SilverWale Selection 1'
-                            className='w-full h-[500px] object-cover transition-transform duration-700 group-hover:scale-105'
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500"></div>
+                {/* Mobile Slider (1 at a time) */}
+                <div className="md:hidden relative overflow-hidden">
+                    <div 
+                        className="flex transition-transform duration-1000 cubic-bezier(0.4, 0, 0.2, 1)"
+                        style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                    >
+                        {selections.map((item, idx) => (
+                            <div key={idx} className="w-full flex-shrink-0 px-2">
+                                <Link to={item.link} className="block relative aspect-[4/5] overflow-hidden group rounded-sm shadow-lg">
+                                    <img
+                                        src={item.image}
+                                        alt={item.title}
+                                        className='w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110'
+                                    />
+                                    <div className="absolute inset-x-4 bottom-6 glass-overlay p-4 text-center">
+                                        <span className="text-black text-[9px] tracking-[0.3em] uppercase border-b border-black/30 pb-1">Shop Collection</span>
+                                    </div>
+                                </Link>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Desktop Grid Layout - Premium collage */}
+                <div className='hidden md:grid grid-cols-12 gap-8 h-[600px]'>
+                    {/* Main Large Image */}
+                    <div className='col-span-7 overflow-hidden group cursor-pointer relative card-hover-lift h-full'>
+                        <Link to={selections[0].link} className="block h-full">
+                            <img
+                                src={collage1}
+                                alt='SilverWale Selection 1'
+                                className='w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110'
+                            />
+                            <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors duration-500"></div>
+                            <div className="absolute bottom-10 left-10 text-white z-10 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                                <span className="text-[10px] tracking-[0.4em] uppercase border-b border-white pb-1">Shop Now</span>
+                            </div>
+                        </Link>
                     </div>
 
-                    <div className='flex flex-col gap-8'>
-                        <div className='overflow-hidden group cursor-pointer relative'>
-                            <img
-                                src={collage2}
-                                alt='SilverWale Selection 2'
-                                className='w-full h-[234px] object-cover transition-transform duration-700 group-hover:scale-105'
-                            />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500"></div>
+                    {/* Side Stack */}
+                    <div className='col-span-5 flex flex-col gap-6 h-full'>
+                        <div className='flex-1 overflow-hidden group cursor-pointer relative card-hover-lift'>
+                            <Link to={selections[1].link} className="block h-full">
+                                <img
+                                    src={collage2}
+                                    alt='SilverWale Selection 2'
+                                    className='w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110'
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white z-10 opacity-0 group-hover:opacity-100 transition-all duration-500 text-center w-full px-4">
+                                    <span className="text-[10px] tracking-[0.3em] uppercase border-b border-white pb-1">Shop Now</span>
+                                </div>
+                            </Link>
                         </div>
-                        <div className='overflow-hidden group cursor-pointer relative'>
-                            <img
-                                src={collage3}
-                                alt='SilverWale Selection 3'
-                                className='w-full h-[234px] object-cover transition-transform duration-700 group-hover:scale-105'
-                            />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500"></div>
+                        <div className='flex-1 overflow-hidden group cursor-pointer relative card-hover-lift'>
+                            <Link to={selections[2].link} className="block h-full">
+                                <img
+                                    src={collage3}
+                                    alt='SilverWale Selection 3'
+                                    className='w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110'
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white z-10 opacity-0 group-hover:opacity-100 transition-all duration-500 text-center w-full px-4">
+                                    <span className="text-[10px] tracking-[0.3em] uppercase border-b border-white pb-1">Shop Now</span>
+                                </div>
+                            </Link>
                         </div>
                     </div>
                 </div>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import ProductListCard from '../../components/ProductListCard';
+import ProductCard from '../../components/ProductCard';
 
 function ProductListPage() {
     const { categoryId } = useParams();
@@ -54,7 +54,7 @@ function ProductListPage() {
                 )}
                 <div className='flex flex-wrap gap-8 justify-center'>
                     {products.map(product => (
-                        <ProductListCard key={product._id} product={product} />
+                        <ProductCard key={product._id} product={product} />
                     ))}
                 </div>
             </div>

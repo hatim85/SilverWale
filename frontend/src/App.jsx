@@ -57,6 +57,7 @@ function App() {
           <Route path="/products/:productId" element={<ProductDescription />} />
           <Route path='/addressform' element={<AddressForm />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/explore" element={<CategoryProductsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

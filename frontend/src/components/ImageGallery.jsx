@@ -9,14 +9,20 @@ function ImageGallery({ isCompact = false }) {
   const banners = [
     {
       image: '/ImageGallery_1.png',
+      title: 'Crafted For Brilliance',
+      subtitle: 'Expertly designed lab-grown jewellery.',
       link: '/category/necklace',
     },
     {
       image: '/ImageGallery_2.png',
+      title: 'Pure Elegance',
+      subtitle: 'Timeless designs for every occasion.',
       link: '/category/ring',
     },
     {
       image: '/ImageGallery_3.png',
+      title: 'The Modern Heirloom',
+      subtitle: 'Luxury redefined for the contemporary woman.',
       link: '/category/earring',
     }
   ];
@@ -38,11 +44,11 @@ function ImageGallery({ isCompact = false }) {
 
   return (
     <div className={`relative w-full overflow-hidden bg-white ${isCompact ? 'h-full' : ''}`}>
-      <div className={`relative w-full overflow-hidden group ${isCompact ? 'h-full' : 'h-[60vh] md:h-[85vh]'}`}>
+      <div className={`relative w-full overflow-hidden group ${isCompact ? 'h-full' : 'h-[35vh] md:h-[85vh]'}`}>
         {banners.map((banner, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-all duration-1000 ease-in-out transform ${currentIndex === index ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-105 z-0'
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out transform ${currentIndex === index ? 'opacity-100 z-10' : 'opacity-0 z-0'
               }`}
           >
             <div className="relative h-full w-full">
@@ -50,24 +56,18 @@ function ImageGallery({ isCompact = false }) {
                 src={banner.image}
                 alt={banner.title}
                 className="w-full h-full object-cover"
-                onError={(e) => { e.target.src = 'https://via.placeholder.com/1920x1080?text=SilverWale+Collection'; }}
+                onError={(e) => { e.target.src = '/ImageGallery_1.png'; }}
               />
 
-              {/* Premium Overlay Text for Main Slider */}
+              {/* Premium Overlay */}
               {!isCompact && (
-                <div className="absolute inset-0 bg-black/10 flex flex-col items-center justify-center text-center">
-                  <div className="px-4 mt-auto mb-20 md:mb-32">
-                    <h2 className="text-white text-3xl md:text-6xl font-serif tracking-[0.2em] mb-4 animate-fadeInUp">
-                      {banner.title}
-                    </h2>
-                    <p className="text-white/90 text-sm md:text-xl font-light tracking-[0.3em] mb-12 uppercase animate-fadeInUp delay-100">
-                      {banner.subtitle}
-                    </p>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+                  <div className="animate-fadeIn mt-auto mb-10 md:mb-20">
                     <Link 
                       to={banner.link}
-                      className="inline-block border border-white text-white px-10 py-3 text-[10px] tracking-[0.4em] hover:bg-white hover:text-black transition-all duration-300 uppercase animate-fadeInUp delay-200"
+                      className="inline-block bg-white/20 backdrop-blur-md border border-white text-white px-8 md:px-12 py-3 md:py-4 text-[9px] md:text-[10px] tracking-[0.3em] font-bold hover:bg-white hover:text-black transition-all duration-500 uppercase rounded-sm"
                     >
-                      Explore Now
+                      Shop Now
                     </Link>
                   </div>
                 </div>

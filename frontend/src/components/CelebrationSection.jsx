@@ -26,31 +26,31 @@ const CelebrationSection = () => {
     ];
 
     return (
-        <section className="w-full py-16 bg-white">
-            <div className="container mx-auto px-4 max-w-7xl">
+        <section className="w-full py-16 md:py-24 bg-white">
+            <div className="container mx-auto px-4 max-w-6xl">
                 <div className="text-center mb-12">
                     <h2 className="text-2xl md:text-3xl font-serif tracking-widest text-black uppercase">
                         Celebrate With SilverWale
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                     {cards.map((card, index) => (
                         <Link 
                             key={index}
                             to={card.link}
-                            className="group relative block overflow-hidden"
+                            className="group relative block overflow-hidden shadow-sm"
                         >
-                            <div className="aspect-square md:aspect-[4/5] overflow-hidden bg-gray-50">
+                            <div className="aspect-[4/5] overflow-hidden bg-[#f9f9f9]">
                                 <img 
                                     src={card.image} 
                                     alt={card.title}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                    onError={(e) => { e.target.src = '/ErrorImage.png'; }}
+                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                                    onError={(e) => { e.target.src = '/ring_1.jpeg'; }}
                                 />
                             </div>
-                            <div className="bg-[#969696] py-4 text-center">
-                                <span className="text-white text-lg font-light tracking-wide font-serif">
+                            <div className="bg-[#8E8D8D] py-3 text-center">
+                                <span className="text-white text-[9px] md:text-[11px] font-medium tracking-[0.2em] uppercase">
                                     {card.title}
                                 </span>
                             </div>

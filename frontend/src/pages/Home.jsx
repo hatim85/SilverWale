@@ -11,13 +11,16 @@ import KGNAssurance from '../components/KGNAssurance'
 import Footer from '../components/Footer'
 import FloatingWhatsApp from '../components/FloatingWhatsApp'
 
+import TheEdit from '../components/TheEdit'
+
 function Home() {
   return (
     <>
       <Header />
-      <div className="mb-8 overflow-hidden">
+      <div className="mb-4 overflow-hidden">
         <ImageGallery />
       </div>
+      <TheEdit />
       <CelebrationSection />
       <MostLoved />
       <BestSellers />

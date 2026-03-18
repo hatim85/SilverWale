@@ -5,12 +5,7 @@ import { GiBigDiamondRing, GiNecklace } from 'react-icons/gi'; // Example icons
 const FilterSidebar = ({ selectedFilters, onFilterChange, onClearAll }) => {
     const [openSections, setOpenSections] = useState({
         'Jewellery Types': true,
-        'Price Range': false,
-        'Metal Purity': false,
-        'Gender': false,
-        'Metal Weight': false,
-        'Gemstone': false,
-        'Gemstone Shape': false
+        'Price Range': true
     });
 
     const [categories, setCategories] = useState([]);
@@ -32,14 +27,17 @@ const FilterSidebar = ({ selectedFilters, onFilterChange, onClearAll }) => {
         setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
     };
 
+    const priceRanges = [
+        { id: 'p1', name: 'Under ₹5,000', min: 0, max: 5000 },
+        { id: 'p2', name: '₹5,000 - ₹10,000', min: 5000, max: 10000 },
+        { id: 'p3', name: '₹10,000 - ₹25,000', min: 10000, max: 25000 },
+        { id: 'p4', name: '₹25,000 - ₹50,000', min: 25000, max: 50000 },
+        { id: 'p5', name: 'Over ₹50,000', min: 50000, max: 1000000 },
+    ];
+
     const filterSections = [
-        { name: 'Jewellery Types', data: categories.map(c => ({ id: c._id, name: c.name, icon: <GiBigDiamondRing className="inline mr-2" />, count: Math.floor(Math.random() * 500) + 100 })) },
-        { name: 'Price Range', data: [] },
-        { name: 'Metal Purity', data: [] },
-        { name: 'Gender', data: [] },
-        { name: 'Metal Weight', data: [] },
-        { name: 'Gemstone', data: [] },
-        { name: 'Gemstone Shape', data: [] }
+        { name: 'Jewellery Types', type: 'category', data: categories.map(c => ({ id: c._id, name: c.name, type: 'category', icon: <GiBigDiamondRing className="inline mr-2" />, count: Array.isArray(c.products) ? c.products.length : 0 })) },
+        { name: 'Price Range', type: 'price', data: priceRanges.map(p => ({ ...p, type: 'price' })) }
     ];
 
     return (
@@ -89,7 +87,7 @@ const FilterSidebar = ({ selectedFilters, onFilterChange, onClearAll }) => {
                             )}
                         </button>
 
-                        {openSections[section.name] && section.name === 'Jewellery Types' && (
+                        {openSections[section.name] && (
                             <div className="mt-4 space-y-3 pl-1">
                                 {section.data.map((item) => (
                                     <label key={item.id} className="flex items-center cursor-pointer group">
@@ -110,7 +108,7 @@ const FilterSidebar = ({ selectedFilters, onFilterChange, onClearAll }) => {
                                         <div className="ml-3 flex items-center text-[13px] md:text-sm text-gray-600 group-hover:text-black transition-colors">
                                             {item.icon}
                                             <span className="tracking-wide">{item.name}</span>
-                                            <span className="ml-1 text-gray-400">({item.count})</span>
+                                            {item.count !== undefined && <span className="ml-1 text-gray-400">({item.count})</span>}
                                         </div>
                                     </label>
                                 ))}

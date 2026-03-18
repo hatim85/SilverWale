@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import DummyHeader from '../components/DummyHeader'
+import Header from '../components/Header'
 
 function PaymentSuccess() {
 
@@ -10,7 +10,7 @@ function PaymentSuccess() {
 
   return (
     <>
-        <DummyHeader/>
+        <Header/>
         <div className="container mx-auto mt-10 flex items-center flex-col">
             <img src='../../ordersuccess.png' alt="success img" />
             <h1 className="text-3xl mt-5 font-semibold mb-6">Order Placed Successfully!</h1>

@@ -1,19 +1,27 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { trackCategoryVisit } from '../../redux/slices/trendingSlice';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import ProductListCard from '../../components/ProductListCard';
+import ProductCard from '../../components/ProductCard';
 import FilterSidebar from '../../components/FilterSidebar';
 
 function CategoryProductsPage() {
     const { categoryName } = useParams();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    // ... (rest of the state and useMemo)
+
     const [categoriesLoading, setCategoriesLoading] = useState(false);
     const [productsLoading, setProductsLoading] = useState(false);
     const [categories, setCategories] = useState([]);
     const [products, setProducts] = useState([]);
     const [error, setError] = useState('');
     const [sort, setSort] = useState('newest');
+    const [selectedPriceFilters, setSelectedPriceFilters] = useState([]);
+    const [allProducts, setAllProducts] = useState([]);
 
     const slug = useMemo(() => {
         const raw = decodeURIComponent(String(categoryName || '')).trim().toLowerCase();
@@ -46,6 +54,14 @@ function CategoryProductsPage() {
         }) || null;
     };
 
+    const selectedCategory = useMemo(() => findCategory(categories), [categories, slug]);
+
+    useEffect(() => {
+        if (selectedCategory?._id) {
+            dispatch(trackCategoryVisit(selectedCategory._id));
+        }
+    }, [selectedCategory?._id, dispatch]);
+
     useEffect(() => {
         const fetchCategories = async () => {
             setCategoriesLoading(true);
@@ -64,20 +80,25 @@ function CategoryProductsPage() {
         fetchCategories();
     }, []);
 
-    const selectedCategory = useMemo(() => findCategory(categories), [categories, slug]);
-
     useEffect(() => {
         const fetchProducts = async () => {
-            // Use 'all' if no specific category is found/selected
-            const catId = selectedCategory?._id || 'all';
-
             setProductsLoading(true);
             setError('');
             try {
-                const res = await fetch(`${import.meta.env.VITE_PORT}/api/products/getProductsByCategory/${catId}?sort=${sort}`);
+                // Fetch all products to handle "Other Categories" section too
+                const res = await fetch(`${import.meta.env.VITE_PORT}/api/products/getProductsByCategory/all?sort=${sort}`);
                 if (!res.ok) throw new Error('Failed to fetch products');
                 const data = await res.json();
-                setProducts(Array.isArray(data) ? data : (data?.products || []));
+                const fetchedProducts = Array.isArray(data) ? data : (data?.products || []);
+                setAllProducts(fetchedProducts);
+                
+                // Set main products (filtered by category initially)
+                const catId = selectedCategory?._id;
+                if (catId) {
+                    setProducts(fetchedProducts.filter(p => (p.categoryId?._id === catId || p.categoryId === catId)));
+                } else {
+                    setProducts(fetchedProducts);
+                }
             } catch (e) {
                 setError(e.message);
             } finally {
@@ -88,14 +109,60 @@ function CategoryProductsPage() {
         fetchProducts();
     }, [selectedCategory?._id, sort, slug]);
 
+
     const handleFilterChange = (filter) => {
-        // Since we are on a category-specific page, changing the "Jewellery Type"
-        // should effectively navigate the user to that category.
-        const filterSlug = filter.name.toLowerCase().replace(/ /g, '-');
-        navigate(`/category/${filterSlug}`);
+        if (filter.type === 'category') {
+            const filterSlug = filter.name.toLowerCase().replace(/ /g, '-');
+            navigate(`/category/${filterSlug}`);
+        } else if (filter.type === 'price') {
+            setSelectedPriceFilters(prev => {
+                const exists = prev.find(f => f.id === filter.id);
+                if (exists) return prev.filter(f => f.id !== filter.id);
+                return [...prev, filter];
+            });
+        }
     };
 
-    const selectedFilters = selectedCategory ? [{ id: selectedCategory._id, name: selectedCategory.name }] : [];
+    const handleClearAll = () => {
+        setSelectedPriceFilters([]);
+        navigate('/category/all');
+    };
+
+    const filteredProducts = useMemo(() => {
+        if (selectedPriceFilters.length === 0) return products;
+        
+        return products.filter(product => {
+            return selectedPriceFilters.some(range => {
+                const price = Number(product.price);
+                return price >= range.min && price <= range.max;
+            });
+        });
+    }, [products, selectedPriceFilters]);
+
+    const otherCategoryProducts = useMemo(() => {
+        const catId = selectedCategory?._id;
+        if (!catId) return [];
+        
+        // Products from other categories
+        let other = allProducts.filter(p => p.categoryId?._id !== catId && p.categoryId !== catId);
+        
+        // Filter by price if selected
+        if (selectedPriceFilters.length > 0) {
+            other = other.filter(product => {
+                return selectedPriceFilters.some(range => {
+                    const price = Number(product.price);
+                    return price >= range.min && price <= range.max;
+                });
+            });
+        }
+        
+        return other.slice(0, 10); // Show up to 10
+    }, [allProducts, selectedCategory, selectedPriceFilters]);
+
+    const selectedFilters = useMemo(() => {
+        const catFilter = selectedCategory ? [{ id: selectedCategory._id, name: selectedCategory.name, type: 'category' }] : [];
+        return [...catFilter, ...selectedPriceFilters];
+    }, [selectedCategory, selectedPriceFilters]);
 
     return (
         <div className="min-h-screen bg-white flex flex-col">
@@ -108,7 +175,7 @@ function CategoryProductsPage() {
                         <FilterSidebar 
                             selectedFilters={selectedFilters}
                             onFilterChange={handleFilterChange}
-                            onClearAll={() => navigate('/category/all')}
+                            onClearAll={handleClearAll}
                         />
                     </div>
 
@@ -120,7 +187,7 @@ function CategoryProductsPage() {
                                     {selectedCategory?.name || 'All Jewellery'}
                                 </h1>
                                 <p className="text-xs text-gray-400 mt-2 tracking-widest uppercase">
-                                    {products.length} Products Found
+                                    {filteredProducts.length} Products Found
                                 </p>
                             </div>
 
@@ -149,16 +216,55 @@ function CategoryProductsPage() {
                             <div className="text-center py-20 text-gray-500 uppercase tracking-widest text-sm">{error}</div>
                         )}
 
-                        {!categoriesLoading && !productsLoading && !error && products.length === 0 && (
-                            <div className="text-center py-20 text-gray-500 uppercase tracking-widest text-sm">No products found</div>
+                        {!categoriesLoading && !productsLoading && !error && filteredProducts.length === 0 && (
+                            <div className="text-center py-20 text-gray-500 uppercase tracking-widest text-sm">No products found matching your filters</div>
                         )}
 
                         {/* Product Grid */}
-                        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-x-6 gap-y-12">
-                            {products.map((product) => (
-                                <ProductListCard key={product._id} product={product} />
+                        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-x-6 gap-y-12 mb-20">
+                            {filteredProducts.map((product) => (
+                                <ProductCard key={product._id} product={product} />
                             ))}
                         </div>
+
+                        {/* Other Categories Section - only show if on a specific category */}
+                        {selectedCategory && otherCategoryProducts.length > 0 && (
+                            <div className="border-t border-gray-100 pt-20">
+                                <div className="text-center space-y-12">
+                                    <h2 className="text-2xl font-medium tracking-tight text-gray-900 font-serif uppercase tracking-[0.2em]">Explore Other Categories</h2>
+                                    
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-12 pt-10">
+                                        {otherCategoryProducts.map((p) => (
+                                            <div key={p._id} className="group relative flex flex-col space-y-4 text-left">
+                                                <Link to={`/products/${p._id}`} className="block relative aspect-square bg-white overflow-hidden border border-gray-50">
+                                                    <img 
+                                                        src={p.image?.[0] ? `/${p.image[0].split(/[\\/]/).pop()}` : '/ErrorImage.png'} 
+                                                        alt={p.name} 
+                                                        className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                                                    />
+                                                </Link>
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] tracking-[0.2em] uppercase text-gray-400 font-bold">{p.categoryName || 'Jewellery'}</p>
+                                                    <Link to={`/products/${p._id}`}>
+                                                        <h3 className="text-[13px] text-gray-800 font-light leading-relaxed line-clamp-2 hover:text-black transition-colors">{p.name}</h3>
+                                                    </Link>
+                                                    <p className="text-sm font-bold text-gray-900">₹{Number(p.price).toLocaleString('en-IN')}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    
+                                    <div className="pt-10">
+                                        <button 
+                                            onClick={() => navigate('/category/all')}
+                                            className="px-8 py-3 bg-black text-white text-[11px] uppercase tracking-[0.3em] font-bold hover:bg-gray-800 transition-colors"
+                                        >
+                                            View All Products
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>

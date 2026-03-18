@@ -1,51 +1,43 @@
 import React from 'react';
-import icon1 from '../../assets/Icon1_assurance.svg';
-import icon2 from '../../assets/Icon2_assurance.svg';
-import icon3 from '../../assets/Icon3_assurance.svg';
+import { FaCertificate, FaGem, FaRedo, FaShieldAlt } from 'react-icons/fa';
 
 const KGNAssurance = () => {
     const assurances = [
         {
-            icon: icon1,
-            title: "Quality Craftsmanship",
-            description: "Expertly crafted with precision and care"
+            icon: <FaShieldAlt className="w-5 h-5 md:w-6 md:h-6" />,
+            title: "BIS Hallmark",
+            description: "100% Hallmarked Jewellery"
         },
         {
-            icon: icon2,
-            title: "Ethically Sourced",
-            description: "Responsibly sourced materials and gems"
+            icon: <FaRedo className="w-5 h-5 md:w-6 md:h-6" />,
+            title: "15-Day Returns",
+            description: "No questions asked returns"
         },
         {
-            icon: icon3,
-            title: "100% Transparency",
-            description: "Clear pricing and honest product information"
+            icon: <FaCertificate className="w-5 h-5 md:w-6 md:h-6" />,
+            title: "SilverWale Certified",
+            description: "Authenticity guaranteed"
+        },
+        {
+            icon: <FaGem className="w-5 h-5 md:w-6 md:h-6" />,
+            title: "Lifetime Exchange",
+            description: "& Buyback on all orders"
         }
     ];
 
     return (
-        <section className='w-full py-24 px-4 bg-[#f8f8f8] border-y border-gray-100'>
+        <section className='w-full py-12 md:py-20 px-4 bg-white border-y border-gray-50'>
             <div className='max-w-7xl mx-auto'>
-                <div className='text-center mb-16'>
-                    <h2 className='text-3xl md:text-4xl font-serif tracking-[0.2em] text-black uppercase mb-4'>SilverWale Assurance</h2>
-                    <p className='text-gray-500 font-light tracking-[0.15em] uppercase text-xs md:text-sm'>Your trust is our most precious asset</p>
-                </div>
-
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-12'>
+                <div className='grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-4'>
                     {assurances.map((assurance, index) => (
-                        <div key={index} className='text-center group px-4'>
-                            <div className='flex justify-center mb-8'>
-                                <div className='w-20 h-20 bg-white rounded-full flex items-center justify-center border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300'>
-                                    <img
-                                        src={assurance.icon}
-                                        alt={assurance.title}
-                                        className='w-10 h-10 grayscale'
-                                    />
-                                </div>
+                        <div key={index} className='flex flex-col items-center text-center px-2 group'>
+                            <div className='mb-4 md:mb-6 w-12 h-12 md:w-16 md:h-16 bg-[#f9f9f9] rounded-full flex items-center justify-center text-gray-400 group-hover:text-black group-hover:bg-gray-100 transition-all duration-500'>
+                                {assurance.icon}
                             </div>
-                            <h3 className='text-sm font-bold tracking-[0.2em] text-black uppercase mb-4 group-hover:tracking-[0.25em] transition-all'>
+                            <h3 className='text-[10px] md:text-xs font-bold tracking-[0.15em] text-black uppercase mb-1 md:mb-2'>
                                 {assurance.title}
                             </h3>
-                            <p className='text-gray-500 text-xs md:text-sm leading-relaxed font-light max-w-[250px] mx-auto'>
+                            <p className='text-gray-400 text-[8px] md:text-[10px] leading-relaxed font-medium uppercase tracking-widest max-w-[120px]'>
                                 {assurance.description}
                             </p>
                         </div>

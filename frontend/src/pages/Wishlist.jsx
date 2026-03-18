@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchWishlist, removeFromWishlist } from '../redux/slices/wishlistSlice';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import ProductListCard from '../components/ProductListCard';
+import ProductCard from '../components/ProductCard';
 import { FaTrash } from 'react-icons/fa';
 
 function Wishlist() {
@@ -49,7 +49,7 @@ function Wishlist() {
                 <div className="flex flex-wrap gap-8 justify-center">
                     {items.map((product) => (
                         <div key={product._id} className="relative">
-                            <ProductListCard product={product} showWishlistButton={false} />
+                            <ProductCard product={product} showWishlistButton={false} />
                             <button
                                 onClick={() => handleRemove(product._id)}
                                 className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors z-10"

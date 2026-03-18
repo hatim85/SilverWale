@@ -1,4 +1,4 @@
-import { applyMiddleware, combineReducers, configureStore, createStore } from "@reduxjs/toolkit";
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import userReducer from './slices/userSlice.js'
 import categoryReducer from './slices/categorySlice.js'
 import productReducer from './slices/productSlice.js'
@@ -8,14 +8,9 @@ import addressReducer from './slices/addressSlice.js'
 import paymentReducer from './slices/paymentSlice.js'
 import orderReducer from './slices/orderSlice.js'
 import wishlistReducer from './slices/wishlistSlice.js'
+import trendingReducer from './slices/trendingSlice.js'
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from "redux-persist/lib/storage";
-
-// export const store=configureStore({
-//     reducer:{
-//         user:userReducer
-//     }
-// });
 
 const rootReducer = combineReducers({
     user: userReducer,
@@ -27,6 +22,7 @@ const rootReducer = combineReducers({
     payment: paymentReducer,
     order: orderReducer,
     wishlist: wishlistReducer,
+    trending: trendingReducer,
 })
 
 const persistConfig = {
@@ -42,6 +38,6 @@ export const store = configureStore({
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({ serializableCheck: false })
 });
-// const store = createStore(persistedReducer);
+
 export const persistor = persistStore(store);
 export default store;
