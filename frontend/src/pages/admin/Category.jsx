@@ -199,7 +199,7 @@ function Category() {
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 {category.image && category.image[0] && (
-                  <img src={`/${category.image[0].split(/[\\/]/).pop()}`} alt={category.name} className="w-16 h-16 object-contain bg-gray-50 border border-gray-100 p-1" />
+                  <img src={category.image?.[0] ? (category.image[0].includes('cloudinary.com') ? category.image[0] : `/${category.image[0].split(/[\\/]/).pop()}`) : '/ErrorImage.png'} alt={category.name} className="w-16 h-16 object-contain bg-gray-50 border border-gray-100 p-1" />
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">

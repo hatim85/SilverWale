@@ -512,7 +512,7 @@ function Product() {
                             <td className="px-6 py-4 whitespace-nowrap">
                                 {(() => {
                                     const coverIdx = product.coverImageIndex ?? 0;
-                                    const src = product.image && product.image[coverIdx] ? `/${product.image[coverIdx].split(/[\\/]/).pop()}` : '';
+                                    const src = product.image && product.image[coverIdx] ? (product.image[coverIdx].includes('cloudinary.com') ? product.image[coverIdx] : `/${product.image[coverIdx].split(/[\\/]/).pop()}`) : '';
                                     return <img src={src} alt="Product" className="w-20 h-20 object-contain bg-gray-50 border border-gray-100 p-1" />;
                                 })()}
                             </td>

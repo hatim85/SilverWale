@@ -7,6 +7,7 @@ import { getMakingCharge, applyMakingChargeToProductDoc } from "../utils/pricing
 import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
+import { cloudinary } from '../utils/multer.js';
 
 const UPLOAD_DIR = path.resolve(process.cwd(), '../frontend/public');
 
@@ -14,20 +15,31 @@ const UPLOAD_DIR = path.resolve(process.cwd(), '../frontend/public');
  * Delete image files from the public folder.
  * Silently ignores files that don't exist.
  */
-function deleteImageFiles(filenames) {
-    console.log('[deleteImageFiles] Attempting to delete:', filenames);
-    console.log('[deleteImageFiles] UPLOAD_DIR:', UPLOAD_DIR);
+async function deleteImageFiles(filenames) {
     for (const filename of filenames) {
         if (!filename) continue;
-        const filePath = path.join(UPLOAD_DIR, filename);
-        console.log('[deleteImageFiles] Deleting file:', filePath);
-        fs.unlink(filePath, (err) => {
-            if (err) {
-                console.error(`[deleteImageFiles] Failed to delete ${filePath}:`, err.message);
-            } else {
-                console.log(`[deleteImageFiles] Successfully deleted: ${filename}`);
+        
+        if (filename.includes('cloudinary.com')) {
+            try {
+                const parts = filename.split('/');
+                const file = parts.pop();
+                const folder = parts.pop();
+                const publicId = `${folder}/${file.split('.')[0]}`;
+                await cloudinary.uploader.destroy(publicId);
+                console.log(`[deleteImageFiles] Cloudinary deleted: ${publicId}`);
+            } catch (err) {
+                console.error(`[deleteImageFiles] Cloudinary delete error:`, err);
             }
-        });
+        } else {
+            const filePath = path.join(UPLOAD_DIR, filename);
+            fs.unlink(filePath, (err) => {
+                if (err) {
+                    console.error(`[deleteImageFiles] Failed to delete ${filePath}:`, err.message);
+                } else {
+                    console.log(`[deleteImageFiles] Successfully deleted: ${filename}`);
+                }
+            });
+        }
     }
 }
 
@@ -96,7 +108,7 @@ export const createProduct = async (req, res, next) => {
     }
 
     const { name, description, price, categoryId, stock, coverImageIndex } = req.body;
-    const imageFiles = (req.files || []).map(file => file.filename).slice(0, 4);
+    const imageFiles = (req.files || []).map(file => file.path).slice(0, 4);
 
     let coverIdx = 0;
     if (coverImageIndex !== undefined && imageFiles.length > 0) {
@@ -238,8 +250,8 @@ export const updateProduct = async (req, res, next) => {
         // Handle new uploaded images
         if (req.files && req.files.length > 0) {
             const oldImages = [...product.image]; // snapshot before update
-            const filenames = req.files.map(file => file.filename);
-            product.image = [...product.image, ...filenames].slice(-4); // keep latest up to 4
+            const newImageUrls = req.files.map(file => file.path);
+            product.image = [...product.image, ...newImageUrls].slice(-4); // keep latest up to 4
 
             // Delete old images that are no longer in the updated list (pushed out by limit)
             const pushedOut = oldImages.filter(img => !product.image.includes(img));
@@ -395,7 +407,7 @@ export const similarProduct = async (req, res) => {
 export const updateImages = async (req, res) => {
     const { productId } = req.params;
     const images = req.files || [];
-    const filenames = images.map(item => item.filename).slice(0, 4);
+    const filenames = images.map(item => item.path).slice(0, 4);
 
     try {
         const product = await Product.findById(productId);

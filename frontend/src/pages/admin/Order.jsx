@@ -126,7 +126,7 @@ function Order() {
                             console.log('Admin order item:', item);
                             const coverIdx = item.productId?.coverImageIndex ?? 0;
                             const filename = item.productId?.image?.[coverIdx] || item.productId?.image?.[0];
-                            const displayImg = filename ? `/${filename.split(/[\\/]/).pop()}` : '/ErrorImage.png';
+                            const displayImg = filename ? (filename.includes('cloudinary.com') ? filename : `/${filename.split(/[\\/]/).pop()}`) : '/ErrorImage.png';
                             return (
                             <div key={item._id} className="flex items-center gap-6 pb-4 border-b border-gray-50 last:border-0 last:pb-0">
                                 <a href={`/products/${item.productId?._id}`} target="_blank" rel="noopener noreferrer">

@@ -2,6 +2,7 @@ import { errorHandler } from "../utils/error.js";
 import Category from "../models/categoryModel.js";
 import Product from "../models/productModel.js";
 import mongoose from "mongoose";
+import { cloudinary } from "../utils/multer.js";
 
 // Create a new category
 export const createCategory = async (req, res, next) => {
@@ -153,6 +154,19 @@ export const removeCategoryImage = async (req, res, next) => {
         category.image = category.image.filter((img) => img !== imageFilename);
         await category.save();
 
+        // Also delete from Cloudinary if it's a Cloudinary URL
+        if (imageFilename.includes('cloudinary.com')) {
+            try {
+                const parts = imageFilename.split('/');
+                const file = parts.pop();
+                const folder = parts.pop();
+                const publicId = `${folder}/${file.split('.')[0]}`;
+                await cloudinary.uploader.destroy(publicId);
+            } catch (err) {
+                console.error('Cloudinary delete error:', err);
+            }
+        }
+
         res.status(200).json(category);
     } catch (err) {
         console.error('removeCategoryImage error:', err);
@@ -179,7 +193,7 @@ export const getCategoryProducts = async (req, res, next) => {
 export const updateimg=async(req,res)=>{
     const {categoryId}=req.params;
     const image=req.files;
-    const imgs=image.map((item)=>item.filename)
+    const imgs=image.map((item)=>item.path)
     try {
         const updatedImg=await Category.findByIdAndUpdate(categoryId,{image:imgs},{new:true});
         res.json(updatedImg)

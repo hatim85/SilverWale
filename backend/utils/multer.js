@@ -1,16 +1,25 @@
 import multer from 'multer';
-import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import dotenv from 'dotenv';
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        // save uploads into the frontend public folder so they are statically served
-        cb(null, path.resolve(process.cwd(), '../frontend/public'));
-    },
-    filename: function (req, file, cb) {
-        cb(null, `${Date.now()}-${file.originalname}`);
+dotenv.config();
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'SilverWaleProducts', // The folder name in your Cloudinary account
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp']
     }
 });
 
 const upload = multer({ storage });
 
+export { cloudinary };
 export default upload;

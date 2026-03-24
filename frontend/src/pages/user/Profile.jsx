@@ -259,7 +259,7 @@ function Profile() {
                           {order.products?.map((item, idx) => {
                              const coverIdx = item.productId?.coverImageIndex ?? 0;
                              const filename = item.productId?.image?.[coverIdx] || item.productId?.image?.[0];
-                             const displayImg = filename ? `/${filename.split(/[\\/]/).pop()}` : '/ErrorImage.png';
+                             const displayImg = filename ? (filename.includes('cloudinary.com') ? filename : `/${filename.split(/[\\/]/).pop()}`) : '/ErrorImage.png';
                              return (
                                <div key={idx} className="flex gap-4 items-center bg-gray-50/50 p-3">
                                  <img src={displayImg} className="w-16 h-16 object-contain bg-white border border-gray-100" />

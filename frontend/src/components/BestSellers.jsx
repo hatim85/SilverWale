@@ -10,6 +10,7 @@ const BestSellers = () => {
 
     const getImagePath = (imageName) => {
         if (!imageName) return '/ring_1.jpeg';
+        if (imageName.includes('cloudinary.com')) return imageName;
         return `/${imageName.split(/[\\/]/).pop()}`;
     };
 

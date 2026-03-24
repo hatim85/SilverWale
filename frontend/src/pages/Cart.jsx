@@ -124,7 +124,7 @@ function Cart() {
                             {validatedCartItems.map((item) => {
                                 const coverIdx = item.product?.coverImageIndex ?? 0;
                                 const filename = item.product?.image?.[coverIdx] || item.product?.image?.[0];
-                                const displayImg = filename ? `/${filename.split(/[\\/]/).pop()}` : '/ErrorImage.png';
+                                const displayImg = filename ? (filename.includes('cloudinary.com') ? filename : `/${filename.split(/[\\/]/).pop()}`) : '/ErrorImage.png';
 
                                 return (
                                     <div key={item.cartItemId} className='bg-white border border-gray-100 rounded-sm relative group animate-fadeIn'>

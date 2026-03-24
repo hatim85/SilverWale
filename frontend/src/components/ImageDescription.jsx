@@ -30,7 +30,7 @@ function ImageDescription({ images }) {
                     {prodimg.map((prod, index) => (
                         <div key={index} className="w-full flex-shrink-0">
                             <img
-                                src={`/${prod.split(/[\\/]/).pop()}`}
+                                src={prod.includes('cloudinary.com') ? prod : `/${prod.split(/[\\/]/).pop()}`}
                                 alt={`Slide ${index + 1}`}
                                 onError={(e) => {
                                     e.target.src = '/ErrorImage.png';

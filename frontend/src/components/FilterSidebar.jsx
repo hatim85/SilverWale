@@ -36,7 +36,7 @@ const FilterSidebar = ({ selectedFilters, onFilterChange, onClearAll }) => {
     ];
 
     const filterSections = [
-        { name: 'Jewellery Types', type: 'category', data: categories.map(c => ({ id: c._id, name: c.name, type: 'category', icon: <GiBigDiamondRing className="inline mr-2" />, count: Array.isArray(c.products) ? c.products.length : 0 })) },
+        { name: 'Jewellery Types', type: 'category', data: categories.filter(c => c && c.name).map(c => ({ id: c._id, name: c.name, type: 'category', icon: <GiBigDiamondRing className="inline mr-2" />, count: Array.isArray(c.products) ? c.products.length : 0 })) },
         { name: 'Price Range', type: 'price', data: priceRanges.map(p => ({ ...p, type: 'price' })) }
     ];
 

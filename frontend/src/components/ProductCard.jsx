@@ -38,7 +38,7 @@ const ProductCard = ({ product, showWishlistButton = true }) => {
     };
 
     const currentImage = images[currentImageIndex] || images[0];
-    const imagePath = currentImage ? `/${currentImage.split(/[\\/]/).pop()}` : '/ErrorImage.png';
+    const imagePath = currentImage ? (currentImage.includes('cloudinary.com') ? currentImage : `/${currentImage.split(/[\\/]/).pop()}`) : '/ErrorImage.png';
 
     return (
         <div className="group relative bg-white transition-all duration-500 hover:shadow-xl hover:-translate-y-1 flex flex-col h-full border border-gray-50 rounded-sm">

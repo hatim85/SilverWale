@@ -168,7 +168,7 @@ function ProductUpdate() {
                     className={`w-full border rounded-sm overflow-hidden relative aspect-square transition-all ${Number(form.coverImageIndex) === idx ? 'ring-2 ring-black' : 'hover:border-gray-400'}`}
                   >
                     <img
-                      src={`/${filename.split(/[\\/]/).pop()}`}
+                      src={filename.includes('cloudinary.com') ? filename : `/${filename.split(/[\\/]/).pop()}`}
                       alt={`img-${idx}`}
                       className="w-full h-full object-contain bg-gray-50"
                       onError={(e) => (e.target.src = '/ErrorImage.png')}

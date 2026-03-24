@@ -165,7 +165,7 @@ function CategoryUpdate() {
                 {currentImages.map((filename) => (
                   <div key={filename} className="border rounded overflow-hidden relative group">
                     <img
-                      src={`/${filename}`}
+                      src={filename.includes('cloudinary.com') ? filename : `/${filename}`}
                       alt={filename}
                       className="w-full h-24 object-cover"
                       onError={(e) => (e.target.src = '/ErrorImage.png')}

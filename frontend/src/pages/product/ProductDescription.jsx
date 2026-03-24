@@ -442,7 +442,7 @@ function ProductDescription() {
                                 <div key={p._id} className="group relative flex flex-col space-y-4 text-left">
                                     <Link to={`/products/${p._id}`} className="block relative aspect-square bg-white overflow-hidden">
                                         <img 
-                                            src={p.image?.[0] ? `/${p.image[0].split(/[\\/]/).pop()}` : '/ErrorImage.png'} 
+                                            src={p.image?.[0] ? (p.image[0].includes('cloudinary.com') ? p.image[0] : `/${p.image[0].split(/[\\/]/).pop()}`) : '/ErrorImage.png'} 
                                             alt={p.name} 
                                             className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                                         />

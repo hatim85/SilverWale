@@ -47,7 +47,7 @@ function Header() {
     }, []);
 
     const navLinks = categories
-        .filter(cat => cat.name.toLowerCase() !== 'demo')
+        .filter(cat => cat && cat.name && cat.name.toLowerCase() !== 'demo')
         .map(cat => ({
             name: cat.name,
             path: `/category/${cat.name.toLowerCase().replace(/ /g, '-')}`
