@@ -192,7 +192,9 @@ function Category() {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {categories.map((category, key) => (
+          {categories.map((category, key) => {
+            if (!category) return null;
+            return (
             <tr key={key}>
               <td className="px-6 py-4 whitespace-nowrap">
                 {category.name}
@@ -214,7 +216,8 @@ function Category() {
                 </div>
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
       {renderPagination()}

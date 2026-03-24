@@ -495,7 +495,9 @@ function Product() {
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                    {products && Object.values(products).map((product, key) => (
+                    {products && Object.values(products).map((product, key) => {
+                        if (!product) return null;
+                        return (
                         <tr key={key}>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 {product.name}
@@ -528,7 +530,8 @@ function Product() {
                                 </div>
                             </td>
                         </tr>
-                    ))}
+                        );
+                    })}
                 </tbody>
             </table>
             {renderPagination()}
