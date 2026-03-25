@@ -34,6 +34,8 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 const allowedOrigins = [
   'https://silver-wale.vercel.app',
+  'https://app.silverwale.com',
+  'https://silverwale.com',
   process.env.CLIENT // e.g. http://localhost:5173
 ].filter(Boolean);
 
