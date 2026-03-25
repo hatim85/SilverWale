@@ -20,7 +20,7 @@ const CelebrationSection = () => {
         },
         {
             title: "Bridal Jewellery",
-            image: "/bangle_2.jpg",
+            image: "/Pendant_set_1.png",
             link: "/category/bridal"
         }
     ];
