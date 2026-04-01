@@ -56,14 +56,14 @@ function Header() {
     return (
         <header className="w-full bg-white sticky top-0 z-50">
             {/* Top Banner - Slim and Premium */}
-            <div className="w-full bg-[#1b1b1b] text-white py-1 text-center text-[8px] md:text-xs font-medium tracking-[0.2em] px-4 uppercase">
+            <div className="w-full bg-pink-500 text-white py-1 text-center text-[8px] md:text-xs font-medium tracking-[0.2em] px-4 uppercase">
                 SilverWale Lifetime Exchange & Buyback
             </div>
 
             {/* Main Nav Row */}
             <div className="container mx-auto px-4 md:px-8 py-2 md:py-4 flex items-center justify-between border-b border-gray-100">
                 {/* Left: Mobile Menu & Desktop Info */}
-                <div className="flex items-center space-x-4 flex-1">
+                <div className="flex items-center space-x-4 flex-shrink-0 md:flex-1">
                     <button
                         className="text-gray-800 hover:text-black transition-colors md:mr-4 lg:hidden"
                         onClick={() => setIsMenuOpen(true)}
@@ -80,21 +80,21 @@ function Header() {
                 </div>
 
                 {/* Center: Logo & Name Side-by-Side */}
-                <div className="flex-[2] flex justify-center overflow-hidden">
+                <div className="flex-1 md:flex-[2] flex justify-center overflow-hidden px-1 md:px-4">
                     <Link to="/" className="flex items-center group space-x-2 md:space-x-5">
                         <img 
                             src="/LOGO.png" 
                             alt="SilverWale Logo" 
-                            className="h-6 md:h-12 lg:h-16 w-auto object-contain transition-transform duration-500 group-hover:scale-105" 
+                            className="h-5 min-w-[15px] md:h-12 lg:h-16 w-auto object-contain transition-transform duration-500 group-hover:scale-105" 
                         />
-                        <span className="text-sm md:text-3xl lg:text-4xl font-serif tracking-[0.1em] md:tracking-[0.25em] text-black font-light uppercase leading-none border-l border-gray-100 pl-2 md:pl-5">
+                        <span className="text-[12px] md:text-3xl lg:text-4xl font-serif tracking-widest md:tracking-[0.25em] text-black font-light uppercase leading-none border-l border-gray-100 pl-1.5 md:pl-5 whitespace-nowrap">
                             SilverWale
                         </span>
                     </Link>
                 </div>
 
                 {/* Right: Actions */}
-                <div className="flex items-center justify-end space-x-2 md:space-x-8 flex-1">
+                <div className="flex items-center justify-end space-x-1 md:space-x-8 flex-shrink-0 md:flex-1">
                     {/* Desktop Integrated Search Bar */}
                     <form onSubmit={handleSearch} className="hidden md:flex items-center border-b border-gray-200 py-2 focus-within:border-black transition-colors mr-2 h-10">
                         <input
@@ -117,7 +117,7 @@ function Header() {
                         <FaSearch className="h-5 w-5 md:h-6 md:w-6" />
                     </button>
 
-                    <div className="flex items-center space-x-3 md:space-x-8 h-10">
+                    <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-8 h-10">
                         {/* 1. Admin Case: Only Profile and Dashboard */}
                         {currentUser?.userType === "admin" ? (
                             <>
