@@ -70,7 +70,7 @@ export const deleteCartItem=async(req,res)=>{
 
 export const addToCart = async (req, res) => {
     let { productId } = req.params;
-    const { userId } = req.body; 
+    const { userId, size } = req.body; 
 
     try {
         let cart = await Cart.findOne({ userId }).populate('cartItems').exec();
@@ -80,13 +80,14 @@ export const addToCart = async (req, res) => {
         }
 
         productId = String(productId);
-        let cartItem = await CartItem.findOne({ cartId: cart._id, productId }).exec();
+        // Find existing cart item for THIS product AND THIS size
+        let cartItem = await CartItem.findOne({ cartId: cart._id, productId, size: size || null }).exec();
 
         if (cartItem) {
             cartItem.quantity++;
             await cartItem.save();
         } else {
-            cartItem = await CartItem.create({ cartId: cart._id, productId });
+            cartItem = await CartItem.create({ cartId: cart._id, productId, size: size || null });
             cart.cartItems.push(cartItem._id);
             await cart.save();
         }
@@ -119,13 +120,14 @@ export const getCartProducts= async (req, res) => {
         const populatedCartItems = cart.cartItems.map(item => ({
             cartItemId:item._id,
             quantity: item.quantity,
+            size: item.size,
             product: {
-                _id: item.productId._id,
-                name: item.productId.name,
-                price: Number(item.productId.price || 0) + makingCharge,
-                image: item.productId.image,
-                coverImageIndex: item.productId.coverImageIndex,
-                description: item.productId.description,
+                _id: item.productId?._id,
+                name: item.productId?.name,
+                price: Number(item.productId?.price || 0) + makingCharge,
+                image: item.productId?.image,
+                coverImageIndex: item.productId?.coverImageIndex,
+                description: item.productId?.description,
                 // quantity:item.productId.quantity
             }
         }));

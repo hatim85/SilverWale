@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useSwipe } from '../hooks/useSwipe';
 
 const MostLoved = () => {
     const [wishlist, setWishlist] = useState({});
@@ -23,6 +24,11 @@ const MostLoved = () => {
             setCurrentSlide(totalSlides - 1);
         }
     }, [totalSlides, currentSlide, products.length]);
+
+    const { onTouchStart, onTouchMove, onTouchEnd } = useSwipe({
+        onSwipedLeft: () => setCurrentSlide(prev => (prev < totalSlides - 1 ? prev + 1 : 0)),
+        onSwipedRight: () => setCurrentSlide(prev => (prev > 0 ? prev - 1 : totalSlides - 1))
+    });
 
     const getImagePath = (imageName) => {
         if (!imageName) return '/ring_1.jpeg';
@@ -74,12 +80,15 @@ const MostLoved = () => {
                 {/* Product Grid / Slider */}
                 <div className="relative overflow-hidden">
                     <div 
-                        className="mobile-slider desktop-slider min-h-[350px]"
+                        className="mobile-slider desktop-slider min-h-[350px] transition-transform duration-500"
                         style={{ 
                             "--slide-transform": `calc(-${currentSlide * 100}% - ${currentSlide * 1}rem)`,
                             "--desktop-slide-transform": `calc(-${currentSlide * 100}% - ${currentSlide * 2}rem)`,
                             width: '100%'
                         }}
+                        onTouchStart={onTouchStart}
+                        onTouchMove={onTouchMove}
+                        onTouchEnd={onTouchEnd}
                     >
                         {products.map((product) => (
                             <div key={product.id} className="mobile-slider-item-half desktop-slider-item group relative animate-fadeIn">

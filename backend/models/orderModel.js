@@ -19,6 +19,9 @@ const orderSchema = mongoose.Schema({
         unitPriceAtPurchase: {
             type: Number,
             required: true
+        },
+        size: {
+            type: String
         }
     }],
     totalAmount: {

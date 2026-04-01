@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    cartItems: [],
+    cartItems: JSON.parse(localStorage.getItem('guestCart')) || [],
     loading: false,
     error: null
 };
@@ -10,31 +10,40 @@ const cartSlice = createSlice({
     name: 'cart',
     initialState,
     reducers: {
-        // addItem(state, action) {
-        //     const existingItemIndex = state.items.findIndex(item => item.id === action.payload.id);
-        //     if (existingItemIndex !== -1) {
-        //         // If item already exists in cart, update its quantity
-        //         state.items[existingItemIndex].quantity += action.payload.quantity;
-        //     } else {
-        //         // If item doesn't exist in cart, add it
-        //         state.items.push(action.payload);
-        //     }
-        // },
-        // removeItem(state, action) {
-        //     state.items = state.items.filter(item => item.id !== action.payload);
-        // },
-        // updateQuantity(state, action) {
-        //     const { id, quantity } = action.payload;
-        //     const itemToUpdate = state.items.find(item => item.id === id);
-        //     if (itemToUpdate) {
-        //         itemToUpdate.quantity = quantity;
-        //     }
-        // },
-        // clearCart(state) {
-        //     state.items = [];
-        // },
+        addToCartGuest(state, action) {
+            const { product, size } = action.payload;
+            const existingItemIndex = state.cartItems.findIndex(item => item.product?._id === product?._id && item.size === size);
+            
+            if (existingItemIndex !== -1) {
+                state.cartItems[existingItemIndex].quantity += 1;
+            } else {
+                state.cartItems.push({
+                    cartItemId: `guest-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    product,
+                    size,
+                    quantity: 1,
+                    isGuest: true
+                });
+            }
+            localStorage.setItem('guestCart', JSON.stringify(state.cartItems));
+        },
+        removeFromCartGuest(state, action) {
+            state.cartItems = state.cartItems.filter(item => item.cartItemId !== action.payload);
+            localStorage.setItem('guestCart', JSON.stringify(state.cartItems));
+        },
+        updateQuantityGuest(state, action) {
+            const { cartItemId, quantity } = action.payload;
+            const item = state.cartItems.find(i => i.cartItemId === cartItemId);
+            if (item) {
+                item.quantity = quantity;
+            }
+            localStorage.setItem('guestCart', JSON.stringify(state.cartItems));
+        },
+        syncCart(state, action) {
+            state.cartItems = action.payload;
+            localStorage.removeItem('guestCart');
+        },
         addCartItemSuccess(state, action) {
-            // state.cartItems = state.cartItems.filter(item => item._id !== action.payload._id);
             state.loading = false;
             state.error = null;
             state.cartItems = action.payload;
@@ -63,7 +72,6 @@ const cartSlice = createSlice({
         removeCartItemSuccess(state, action) {
             state.loading = false;
             state.error = null;
-            // state.cartItems = state.cartItems.filter(item => item._id !== action.payload);
             state.cartItems = state.cartItems.filter(item => item.cartItemId !== action.payload);
         },
         removeCartItemFailure(state, action) {
@@ -95,10 +103,32 @@ const cartSlice = createSlice({
         updateCartItemQuantityFailure(state, action) {
             state.loading = false;
             state.error = action.payload;
+        },
+        clearCart(state) {
+            state.cartItems = [];
+            localStorage.removeItem('guestCart');
         }
     }
 });
 
-export const { addItem, removeCartItemSuccess, removeCartItemStart, removeCartItemFailure, updateQuantity, clearCart, addCartItemFailure, addCartItemStart, addCartItemSuccess, fetchCartItemsRequest, fetchCartItemsSuccess, fetchCartItemsFailure, updateCartItemQuantityStart, updateCartItemQuantitySuccess, updateCartItemQuantityFailure } = cartSlice.actions;
+export const { 
+    addToCartGuest, 
+    removeFromCartGuest, 
+    updateQuantityGuest, 
+    syncCart,
+    removeCartItemSuccess, 
+    removeCartItemStart, 
+    removeCartItemFailure, 
+    clearCart, 
+    addCartItemFailure, 
+    addCartItemStart, 
+    addCartItemSuccess, 
+    fetchCartItemsRequest, 
+    fetchCartItemsSuccess, 
+    fetchCartItemsFailure, 
+    updateCartItemQuantityStart, 
+    updateCartItemQuantitySuccess, 
+    updateCartItemQuantityFailure 
+} = cartSlice.actions;
 
 export default cartSlice.reducer;

@@ -70,103 +70,118 @@ function Header() {
                     >
                         <FaBars className="h-4 w-4 md:h-6 md:w-6" />
                     </button>
-                    <div className="hidden lg:flex items-center text-[10px] text-gray-400 space-x-2">
-                        <FaPhoneAlt className="h-3 w-3" />
-                        <span className="tracking-widest font-semibold uppercase">+91 900 100 1313</span>
+                    <div className="hidden md:flex flex-col items-start bg-gray-50 px-4 py-2 rounded-md border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-md hover:-translate-y-0.5 group">
+                        <div className="flex items-center text-xs md:text-sm text-gray-700 space-x-2 group-hover:text-black transition-colors">
+                            <FaPhoneAlt className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-400 group-hover:text-black" />
+                            <span className="tracking-[0.1em] font-bold">+91-9924559125</span>
+                        </div>
+                        <p className="text-[7px] md:text-[8px] text-gray-400 uppercase tracking-widest font-bold mt-1 group-hover:text-gray-600 transition-colors">Inquiry & Support</p>
                     </div>
                 </div>
 
-                {/* Center: Logo */}
-                <div className="flex-1 flex justify-center">
-                    <Link to="/" className="text-xl md:text-3xl lg:text-4xl font-serif tracking-[0.2em] text-black font-light uppercase">
-                        SilverWale
+                {/* Center: Logo & Name Side-by-Side */}
+                <div className="flex-[2] flex justify-center overflow-hidden">
+                    <Link to="/" className="flex items-center group space-x-2 md:space-x-5">
+                        <img 
+                            src="/LOGO.png" 
+                            alt="SilverWale Logo" 
+                            className="h-6 md:h-12 lg:h-16 w-auto object-contain transition-transform duration-500 group-hover:scale-105" 
+                        />
+                        <span className="text-sm md:text-3xl lg:text-4xl font-serif tracking-[0.1em] md:tracking-[0.25em] text-black font-light uppercase leading-none border-l border-gray-100 pl-2 md:pl-5">
+                            SilverWale
+                        </span>
                     </Link>
                 </div>
 
                 {/* Right: Actions */}
-                <div className="flex items-center justify-end space-x-4 md:space-x-6 flex-1">
+                <div className="flex items-center justify-end space-x-2 md:space-x-8 flex-1">
                     {/* Desktop Integrated Search Bar */}
-                    <form onSubmit={handleSearch} className="hidden md:flex items-center border-b border-gray-200 py-1 focus-within:border-black transition-colors mr-2">
+                    <form onSubmit={handleSearch} className="hidden md:flex items-center border-b border-gray-200 py-2 focus-within:border-black transition-colors mr-2 h-10">
                         <input
                             type="text"
                             placeholder="SEARCH"
-                            className="bg-transparent text-[10px] tracking-[0.2em] outline-none w-24 lg:w-40 px-1 font-medium placeholder:text-gray-400"
+                            className="bg-transparent text-[11px] tracking-[0.2em] outline-none w-24 lg:w-44 px-2 font-medium placeholder:text-gray-400 h-full"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                         />
-                        <button type="submit" className="text-gray-400 hover:text-black transition-colors">
+                        <button type="submit" className="text-gray-400 hover:text-black transition-colors h-full flex items-center px-1">
                             <FaSearch className="h-4 w-4" />
                         </button>
                     </form>
 
                     {/* Mobile Only: Small Search Icon toggle */}
                     <button
-                        className="md:hidden text-gray-800 hover:text-black transition-colors"
+                        className="md:hidden text-gray-800 hover:text-black transition-colors flex items-center h-10"
                         onClick={() => setShowSearch(!showSearch)}
                     >
-                        <FaSearch className="h-5 w-5" />
+                        <FaSearch className="h-5 w-5 md:h-6 md:w-6" />
                     </button>
 
-                    {!currentUser ? (
-                        /* Not logged in: show only Sign In icon */
-                        <Link to="/signin" className="text-gray-800 hover:text-black transition-colors">
-                            <FaUser className="h-5 w-5" />
-                        </Link>
-                    ) : currentUser.userType === "admin" ? (
-                        /* Admin: show Profile + Dashboard icons */
-                        <>
-                            <Link to="/profile" className="text-gray-800 hover:text-black transition-colors">
-                                <FaUser className="h-5 w-5" />
-                            </Link>
-                            <Link to="/dashboard" className="text-gray-800 hover:text-black transition-colors">
-                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                </svg>
-                            </Link>
-                        </>
-                    ) : (
-                        /* Regular user: show Wishlist + Cart + Profile icons */
-                        <>
-                            <Link to="/wishlist" className="relative text-gray-800 hover:text-black transition-colors">
-                                <FaHeart className="h-5 w-5" />
-                                {wishlistIds?.length > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[8px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-bold">
-                                        {wishlistIds.length}
-                                    </span>
-                                )}
-                            </Link>
+                    <div className="flex items-center space-x-3 md:space-x-8 h-10">
+                        {/* 1. Admin Case: Only Profile and Dashboard */}
+                        {currentUser?.userType === "admin" ? (
+                            <>
+                                <Link to="/profile" className="text-gray-800 hover:text-black transition-all flex items-center h-full">
+                                    <FaUser className="h-6 w-6" />
+                                </Link>
+                                <Link to="/dashboard" className="text-gray-800 hover:text-black transition-all flex items-center h-full">
+                                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    </svg>
+                                </Link>
+                            </>
+                        ) : (
+                            /* 2. Customer or Guest Case: Wishlist, Cart, and Account */
+                            <>
+                                <Link to="/wishlist" className="relative text-gray-800 hover:text-black transition-all flex items-center h-full">
+                                    <FaHeart className="h-5 w-5 md:h-6 md:w-6" />
+                                    {wishlistIds?.length > 0 && (
+                                        <span className="absolute -top-1 -right-2.5 bg-black text-white text-[8px] rounded-full h-4 w-4 flex items-center justify-center font-bold">
+                                            {wishlistIds.length}
+                                        </span>
+                                    )}
+                                </Link>
 
-                            <Link to="/cart" className="relative text-gray-800 hover:text-black transition-colors">
-                                <FaShoppingCart className="h-5 w-5" />
-                                {cartItems?.length > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[8px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-bold">
-                                        {cartItems.length}
-                                    </span>
-                                )}
-                            </Link>
+                                <Link to="/cart" className="relative text-gray-800 hover:text-black transition-all flex items-center h-full">
+                                    <FaShoppingCart className="h-5 w-5 md:h-6 md:w-6" />
+                                    {cartItems?.length > 0 && (
+                                        <span className="absolute -top-1 -right-2.5 bg-black text-white text-[8px] rounded-full h-4 w-4 flex items-center justify-center font-bold">
+                                            {cartItems.length}
+                                        </span>
+                                    )}
+                                </Link>
 
-                            <Link to="/profile" className="text-gray-800 hover:text-black transition-colors">
-                                <FaUser className="h-5 w-5" />
-                            </Link>
-                        </>
-                    )}
+                                {!currentUser ? (
+                                    <Link to="/signin" className="text-gray-800 hover:text-black transition-all flex items-center h-full">
+                                        <FaUser className="h-5 w-5 md:h-6 md:w-6" />
+                                    </Link>
+                                ) : (
+                                    <Link to="/profile" className="text-gray-800 hover:text-black transition-all flex items-center h-full">
+                                        <FaUser className="h-5 w-5 md:h-6 md:w-6" />
+                                    </Link>
+                                )}
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
 
             {/* Mobile Search Bar - Visible below top row when search icon is clicked or by default on home? */}
-            {/* Reference image shows it always visible on mobile index */}
-            <div className="md:hidden w-full px-4 py-2 bg-white border-b border-gray-50">
-                <form onSubmit={handleSearch} className="relative flex items-center">
-                    <FaSearch className="absolute left-3 text-gray-400 h-4 w-4" />
-                    <input
-                        type="text"
-                        placeholder="SEARCH"
-                        className="w-full bg-[#f9f9f9] border border-gray-200 py-2.5 pl-10 pr-4 text-xs tracking-widest outline-none focus:border-black transition-all rounded-sm uppercase font-medium"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                    />
-                </form>
-            </div>
+            {/* Mobile Search Bar - Visible below top row when search icon is clicked and toggled */}
+            {showSearch && (
+                <div className="md:hidden w-full px-4 py-2 bg-white border-b border-gray-50">
+                    <form onSubmit={handleSearch} className="relative flex items-center">
+                        <FaSearch className="absolute left-3 text-gray-400 h-4 w-4" />
+                        <input
+                            type="text"
+                            placeholder="SEARCH"
+                            className="w-full bg-[#f9f9f9] border border-gray-200 py-2.5 pl-10 pr-4 text-xs tracking-widest outline-none focus:border-black transition-all rounded-sm uppercase font-medium"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                        />
+                    </form>
+                </div>
+            )}
 
             {/* Bottom Nav Row (Desktop Only) */}
             <nav className="hidden lg:block w-full border-b border-gray-100">
@@ -229,7 +244,7 @@ function Header() {
                         <p className="text-[10px] tracking-widest text-gray-400 uppercase font-bold mb-4">Support</p>
                         <div className="flex items-center space-x-4 text-xs text-gray-600 uppercase tracking-widest font-semibold hover:text-black cursor-pointer mb-4">
                             <FaPhoneAlt className="h-3 w-3" />
-                            <span>+91 900 100 1313</span>
+                            <span>+91-9924559125</span>
                         </div>
                     </div>
                 </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import {toast} from  "react-toastify";
+import toast from 'react-hot-toast';
 import { signoutSuccess } from '../../redux/slices/userSlice';
 
 function DashSidebar() {
@@ -39,9 +39,9 @@ function DashSidebar() {
     },[location.search])
   return (
     <>
-      <header className='bg-gray-50 border-r border-gray-100 h-full w-64 md:w-72 flex flex-col py-8 font-sans'>
-        <nav className="flex-grow">
-          <ul className="space-y-1">
+      <header className='bg-gray-50 border-b md:border-b-0 md:border-r border-gray-100 h-auto md:h-full w-full md:w-64 lg:w-72 flex flex-col pt-4 md:py-8 font-sans'>
+        <nav className="w-full overflow-x-auto custom-scrollbar">
+          <ul className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-1 px-4 md:px-0">
             {[
               { label: 'Products', tab: 'products' },
               { label: 'Categories', tab: 'categories' },
@@ -51,10 +51,10 @@ function DashSidebar() {
               <li key={item.tab}>
                 <Link 
                   to={`/dashboard?tab=${item.tab}`}
-                  className={`block px-8 py-4 text-[11px] uppercase tracking-[0.2em] font-bold transition-all ${
+                  className={`block px-4 py-3 md:px-8 md:py-4 text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-bold transition-all whitespace-nowrap ${
                     tab === item.tab 
-                      ? 'bg-white text-black border-r-4 border-black' 
-                      : 'text-gray-400 hover:text-gray-800 hover:bg-white/50'
+                      ? 'bg-white text-black border-b-2 md:border-b-0 md:border-r-4 border-black' 
+                      : 'text-gray-400 hover:text-gray-800 hover:bg-black/5'
                   }`}
                 >
                   {item.label}
@@ -63,10 +63,10 @@ function DashSidebar() {
             ))}
           </ul>
         </nav>
-        <div className="px-8 pt-8 border-t border-gray-100">
+        <div className="px-4 py-4 md:px-8 md:pt-8 border-t border-gray-100 mt-2 md:mt-0">
           <button 
             onClick={handleSignout}
-            className="w-full text-left text-[11px] uppercase tracking-[0.2em] font-bold text-gray-400 hover:text-red-600 transition-colors"
+            className="text-left text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-bold text-gray-400 hover:text-red-600 transition-colors"
           >
             Sign Out
           </button>

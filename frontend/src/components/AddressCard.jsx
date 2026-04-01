@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchAddressesStart, fetchAddressesSuccess, fetchAddressesFailure, deleteAddressStart, deleteAddressSuccess, deleteAddressFailure } from '../redux/slices/addressSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { FaTrash } from 'react-icons/fa';
 
 function AddressCard({ onAddressSelect }) {

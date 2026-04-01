@@ -50,10 +50,8 @@ export const getCategories = async (req, res, next) => {
 
 export const getAllCategories = async (req, res, next) => {
     try {
-        // Fetch all categories, projecting only necessary fields
-        const categories = await Category.find({}, '_id name image').exec();
-        // const exec = await Category.find({}, '_id name image').explain('executionStats');
-        // console.log(exec)
+        // Fetch all categories including product references to calculate counts
+        const categories = await Category.find({}, '_id name image products').exec();
 
         res.status(200).json(categories);
     } catch (err) {

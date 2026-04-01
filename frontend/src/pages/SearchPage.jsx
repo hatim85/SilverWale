@@ -49,7 +49,11 @@ function SearchPage() {
 
     const handleFilterChange = (filter) => {
         if (filter.type === 'category') {
-            setCategoryFilter(prev => prev === filter.id ? null : filter.id);
+            if (filter.id === 'all') {
+                setCategoryFilter(null);
+            } else {
+                setCategoryFilter(prev => prev === filter.id ? null : filter.id);
+            }
         } else if (filter.type === 'price') {
             setSelectedPriceFilters(prev => {
                 const exists = prev.find(f => f.id === filter.id);
@@ -87,11 +91,13 @@ function SearchPage() {
 
     const selectedFilters = useMemo(() => {
         const filters = [...selectedPriceFilters];
-        // Note: For simplicity, we're not showing the category name in the tags here 
-        // because we'd need to fetch the category list or find it in the products.
-        // But the checkbox in the sidebar will reflect the state.
+        if (categoryFilter) {
+            filters.push({ id: categoryFilter, name: 'Filtered Category', type: 'category' });
+        } else {
+            filters.push({ id: 'all', name: 'All Collection', type: 'category' });
+        }
         return filters;
-    }, [selectedPriceFilters]);
+    }, [selectedPriceFilters, categoryFilter]);
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
@@ -102,9 +108,10 @@ function SearchPage() {
                     {/* Sidebar */}
                     <div className="w-full md:w-64 flex-shrink-0">
                         <FilterSidebar 
-                            selectedFilters={selectedFilters.concat(categoryFilter ? [{ id: categoryFilter, name: 'Filtered Category' }] : [])}
+                            selectedFilters={selectedFilters}
                             onFilterChange={handleFilterChange}
                             onClearAll={handleClearAll}
+                            currentCount={filteredResults.length}
                         />
                     </div>
 

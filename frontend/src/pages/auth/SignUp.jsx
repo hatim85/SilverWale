@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { FaHome } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify'
+import toast from 'react-hot-toast';
 
 function SignUp() {
   const [error, setError] = useState('');

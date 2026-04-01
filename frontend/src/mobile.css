@@ -5,6 +5,7 @@
         transform: translateX(var(--slide-transform, 0));
         gap: 1rem;
         width: 100%;
+        max-width: 100vw;
     }
 
     .mobile-slider-item {

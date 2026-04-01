@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import collage1 from '../../assets/collage_img_1.jpg';
-import collage2 from '../../assets/collage_img_2.jpg';
-import collage3 from '../../assets/collage_img_3.jpg';
+// Public assets should be referenced directly as strings in Vite/React
+const collage1 = '/Selection1.jpg';
+const collage2 = '/Selection.jpg';
+const collage3 = '/Selection2.jpg';
 
 const KGNSelections = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -14,7 +15,7 @@ const KGNSelections = () => {
     ];
 
     return (
-        <section className='w-full pt-16 pb-24 md:pt-20 md:pb-32 px-4 bg-white'>
+        <section className='w-full pt-16 pb-24 md:pt-20 md:pb-48 px-4 bg-white'>
             <div className='max-w-6xl mx-auto'>
                 <div className='text-center mb-16'>
                     <h2 className='text-3xl md:text-4xl font-serif tracking-[0.3em] text-black uppercase section-title-premium'>SilverWale Selections</h2>
@@ -45,7 +46,7 @@ const KGNSelections = () => {
                 </div>
 
                 {/* Desktop Grid Layout - Premium collage */}
-                <div className='hidden md:grid grid-cols-12 gap-8 h-[600px]'>
+                <div className='hidden md:grid grid-cols-12 gap-8 h-[500px] lg:h-[600px] mb-12 md:mb-24 mt-8'>
                     {/* Main Large Image */}
                     <div className='col-span-7 overflow-hidden group cursor-pointer relative card-hover-lift h-full'>
                         <Link to={selections[0].link} className="block h-full">

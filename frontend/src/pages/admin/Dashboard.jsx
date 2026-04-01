@@ -30,9 +30,9 @@ function Dashboard() {
         </Link>
         <h1 className='font-serif italic text-3xl md:text-4xl text-gray-800 tracking-tight'>Admin Control Panel</h1>
       </div>
-      <div className="flex h-screen">
+      <div className="flex flex-col md:flex-row min-h-screen w-full">
         <DashSidebar />
-        <div className="flex-1">
+        <div className="flex-1 w-full overflow-hidden">
           {tab === 'products' && <Product />}
           {tab === 'product-update' && <ProductUpdate />}
           {tab === 'categories' && <Category />}

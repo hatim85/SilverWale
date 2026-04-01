@@ -112,8 +112,12 @@ function CategoryProductsPage() {
 
     const handleFilterChange = (filter) => {
         if (filter.type === 'category') {
-            const filterSlug = filter.name.toLowerCase().replace(/ /g, '-');
-            navigate(`/category/${filterSlug}`);
+            if (filter.id === 'all') {
+                navigate('/category/all');
+            } else {
+                const filterSlug = filter.name.toLowerCase().replace(/ /g, '-');
+                navigate(`/category/${filterSlug}`);
+            }
         } else if (filter.type === 'price') {
             setSelectedPriceFilters(prev => {
                 const exists = prev.find(f => f.id === filter.id);
@@ -160,7 +164,9 @@ function CategoryProductsPage() {
     }, [allProducts, selectedCategory, selectedPriceFilters]);
 
     const selectedFilters = useMemo(() => {
-        const catFilter = selectedCategory ? [{ id: selectedCategory._id, name: selectedCategory.name, type: 'category' }] : [];
+        const catFilter = selectedCategory 
+            ? [{ id: selectedCategory._id, name: selectedCategory.name, type: 'category' }] 
+            : [{ id: 'all', name: 'All Collection', type: 'category' }];
         return [...catFilter, ...selectedPriceFilters];
     }, [selectedCategory, selectedPriceFilters]);
 
@@ -176,6 +182,7 @@ function CategoryProductsPage() {
                             selectedFilters={selectedFilters}
                             onFilterChange={handleFilterChange}
                             onClearAll={handleClearAll}
+                            currentCount={filteredProducts.length}
                         />
                     </div>
 

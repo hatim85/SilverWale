@@ -8,7 +8,7 @@ import {
   deleteCategoryFailure,
   deleteCategorySuccess
 } from '../../redux/slices/categorySlice';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 function Category() {
@@ -183,7 +183,8 @@ function Category() {
         </button>
       </form>
 
-      <table className="min-w-full divide-y divide-gray-200 bg-white rounded shadow">
+      <div className="w-full overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 bg-white rounded shadow">
         <thead className="bg-gray-50">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
@@ -219,7 +220,8 @@ function Category() {
             );
           })}
         </tbody>
-      </table>
+        </table>
+      </div>
       {renderPagination()}
     </div>
   );

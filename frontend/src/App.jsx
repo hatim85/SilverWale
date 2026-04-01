@@ -8,8 +8,7 @@ import About from './pages/About';
 import Profile from './pages/user/Profile';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from 'react-hot-toast';
 import Dashboard from './pages/admin/Dashboard';
 import ProductListPage from './pages/product/ProductListPage';
 import CategoryProductsPage from './pages/product/CategoryProductsPage';
@@ -28,7 +27,29 @@ function App() {
 
   return (
     <>
-      <ToastContainer />
+      <Toaster 
+        position="bottom-center"
+        toastOptions={{
+          style: {
+            borderRadius: '0px',
+            background: '#000',
+            color: '#fff',
+            fontSize: '11px',
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            fontWeight: 'bold',
+            padding: '16px 24px',
+            border: 'none',
+          },
+          success: {
+            iconTheme: { primary: '#fff', secondary: '#000' }
+          },
+          error: {
+            style: { background: '#ef4444', color: '#fff' },
+            iconTheme: { primary: '#fff', secondary: '#ef4444' }
+          }
+        }}
+      />
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<Home />} />
@@ -36,8 +57,8 @@ function App() {
           <Route path='/privacy' element={<Privacy />} />
           <Route path='/terms' element={<Terms />} />
           <Route path='/about' element={<About />} />
-          <Route path='/signin' element={<SignIn />} />
-          <Route path='/signup' element={<SignUp />} />
+          <Route path='/signin' element={<><Home /><SignIn /></>} />
+          <Route path='/signup' element={<><Home /><SignUp /></>} />
 
           <Route element={<PrivateRoute />}>
             <Route path='/profile' element={<Profile />} />

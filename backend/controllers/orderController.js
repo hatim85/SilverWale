@@ -19,7 +19,8 @@ export const createOrder = async (req, res) => {
             return {
                 productId: p.productId,
                 quantity: p.quantity,
-                unitPriceAtPurchase
+                unitPriceAtPurchase,
+                size: p.size
             };
         });
 

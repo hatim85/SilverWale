@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useSwipe } from '../hooks/useSwipe';
 
 function ImageGallery({ isCompact = false }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -42,9 +43,19 @@ function ImageGallery({ isCompact = false }) {
     return () => clearInterval(intervalRef.current);
   }, [currentIndex]);
 
+  const { onTouchStart, onTouchMove, onTouchEnd } = useSwipe({
+    onSwipedLeft: goToNext,
+    onSwipedRight: goToPrevious
+  });
+
   return (
     <div className={`relative w-full overflow-hidden bg-white ${isCompact ? 'h-full' : ''}`}>
-      <div className={`relative w-full overflow-hidden group ${isCompact ? 'h-full' : 'h-[35vh] md:h-[85vh]'}`}>
+      <div 
+        className={`relative w-full overflow-hidden group ${isCompact ? 'h-full' : 'h-[35vh] md:h-[85vh]'}`}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         {banners.map((banner, index) => (
           <div
             key={index}
@@ -62,7 +73,7 @@ function ImageGallery({ isCompact = false }) {
               {/* Premium Overlay */}
               {!isCompact && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-                  <div className="animate-fadeIn mt-auto mb-10 md:mb-20">
+                  <div className="animate-fadeIn mt-auto mb-16 md:mb-20">
                     <Link 
                       to={banner.link}
                       className="inline-block bg-white/20 backdrop-blur-md border border-white text-white px-8 md:px-12 py-3 md:py-4 text-[9px] md:text-[10px] tracking-[0.3em] font-bold hover:bg-white hover:text-black transition-all duration-500 uppercase rounded-sm"
@@ -100,7 +111,7 @@ function ImageGallery({ isCompact = false }) {
         </button>
 
         {/* Slider Dots */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
           {banners.map((_, index) => (
             <button
               key={index}

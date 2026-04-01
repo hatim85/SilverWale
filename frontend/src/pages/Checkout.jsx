@@ -15,21 +15,16 @@ function Checkout() {
 
     const [deliveryCharge, setDeliveryCharge] = useState(50);
     const [loadingDelivery, setLoadingDelivery] = useState(true);
-    const [paymentMethod, setPaymentMethod] = useState('online'); // 'cod' or 'online'
+    const [paymentMethod, setPaymentMethod] = useState('cod'); 
     const [processing, setProcessing] = useState(false);
     const [selectedAddress, setSelectedAddress] = useState(null);
 
-    // Debug: log cartItems
-    console.log('Checkout cartItems:', cartItems);
-
-    // Redirect to cart if no items (in effect)
     useEffect(() => {
         if (!Array.isArray(cartItems) || cartItems.length === 0) {
             navigate('/cart');
         }
     }, [cartItems, navigate]);
 
-    // Fetch cart items on mount in case Redux state is empty
     useEffect(() => {
         if (!Array.isArray(cartItems) || cartItems.length === 0) {
             const fetchCartItems = async () => {
@@ -54,9 +49,6 @@ function Checkout() {
     const codFee = paymentMethod === 'cod' ? 15 : 0;
     const totalAmount = totalPrice + deliveryCharge + codFee;
 
-    console.log('Checkout totalPrice:', totalPrice, 'deliveryCharge:', deliveryCharge, 'totalAmount:', totalAmount);
-
-    // Delivery date: 1 week from today
     const deliveryDate = new Date();
     deliveryDate.setDate(deliveryDate.getDate() + 7);
     const formattedDeliveryDate = deliveryDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -80,19 +72,19 @@ function Checkout() {
 
     const handlePlaceOrder = async () => {
         if (!selectedAddress) {
-            alert('Please add or select an address before placing an order.');
+            alert('Please select an address before placing your order.');
             return;
         }
         setProcessing(true);
         try {
             const products = cartItems.map(item => ({
                 productId: item.product._id,
-                quantity: item.quantity
+                quantity: item.quantity,
+                size: item.size
             }));
             const cartItemsToDelete = cartItems.map(cartItem => cartItem.cartItemId);
 
             if (paymentMethod === 'cod') {
-                // COD: create order without Razorpay
                 const orderData = {
                     amount: totalAmount,
                     userId,
@@ -104,14 +96,11 @@ function Checkout() {
                     address: selectedAddress
                 };
                 await axios.post(`${import.meta.env.VITE_PORT}/api/orders/create`, orderData);
-                // Delete cart items
                 await Promise.all(cartItemsToDelete.map(id =>
                     axios.delete(`${import.meta.env.VITE_PORT}/api/cart/delete/${id}`)
                 ));
-                // alert('Order placed successfully! You will pay on delivery.');
                 navigate('/paymentsuccess');
             } else {
-                // Online payment: existing Razorpay flow
                 if (!window.Razorpay) {
                     alert('Razorpay SDK not loaded. Please refresh the page.');
                     return;
@@ -124,24 +113,19 @@ function Checkout() {
                     address: selectedAddress
                 });
                 const { data: { key } } = await axios.get(`${import.meta.env.VITE_PORT}/api/getkey`);
-                const productsQueryParam = encodeURIComponent(JSON.stringify(products));
-                const cartItemsQueryParam = encodeURIComponent(JSON.stringify(cartItemsToDelete));
                 const options = {
                     key,
                     amount: order.amount,
                     currency: "INR",
                     name: "SilverWale",
-                    description: "Ecommerce for jewellery",
-                    image: "https://example.com/your_logo",
+                    description: "Premium Jewellery Purchase",
+                    image: "/Logo.jpeg", 
                     order_id: order.id,
                     handler: async (response) => {
-                        // Payment successful: clear cart and redirect
                         try {
                             await Promise.all(cartItemsToDelete.map(id =>
                                 axios.delete(`${import.meta.env.VITE_PORT}/api/cart/delete/${id}`)
                             ));
-                            // Optionally: show success and redirect
-                            // alert('Payment successful! Order placed.');
                             navigate('/paymentsuccess');
                         } catch (err) {
                             console.error('Failed to clear cart after payment:', err);
@@ -149,15 +133,12 @@ function Checkout() {
                         }
                     },
                     prefill: {
-                        name: "Gaurav Kumar",
-                        email: "gaurav.kumar@example.com",
-                        contact: "9000090000"
-                    },
-                    notes: {
-                        address: "Razorpay Corporate Office"
+                        name: currentUser?.username || "",
+                        email: currentUser?.email || "",
+                        contact: currentUser?.phone || ""
                     },
                     theme: {
-                        color: "#3399cc"
+                        color: "#000000"
                     }
                 };
                 const razor = new window.Razorpay(options);
@@ -171,93 +152,140 @@ function Checkout() {
         }
     };
 
+    const getImagePath = (imageName) => {
+        if (!imageName) return '/ErrorImage.png';
+        if (imageName.includes('cloudinary.com')) return imageName;
+        return `/${imageName.split(/[\\/]/).pop()}`;
+    };
+
     return (
-        <>
+        <div className="bg-[#fafafa] min-h-screen font-sans">
             <Header />
-            <AddressCard className='w-fit' onAddressSelect={setSelectedAddress} />
-            <div className='max-w-4xl mx-auto p-6 bg-white rounded shadow-lg space-y-6'>
-                <h1 className='text-2xl font-semibold'>Checkout</h1>
+            <div className="max-w-7xl mx-auto px-4 py-8 md:py-16">
+                <div className="text-center mb-10">
+                    <h1 className="text-3xl font-serif tracking-widest text-black uppercase mb-4">Secure Checkout</h1>
+                    <div className="w-12 h-[1px] bg-black mx-auto"></div>
+                </div>
 
-                {loadingDelivery ? (
-                    <p>Loading pricing...</p>
-                ) : (
-                    <>
-                        {/* Order Summary */}
-                        <div className='border rounded p-4 space-y-2'>
-                            <h2 className='text-lg font-semibold mb-2'>Order Summary</h2>
-                            <div className='flex justify-between'>
-                                <p>Subtotal</p>
-                                <p>₹{totalPrice + 100}</p>
-                            </div>
-                            <div className='flex justify-between'>Discount <p>-₹100</p></div>
-                            <div className='flex justify-between'>
-                                Delivery
-                                <p>
-                                    {deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}
-                                </p>
-                            </div>
-                            {paymentMethod === 'cod' && (
-                                <div className='flex justify-between text-orange-600'>
-                                    COD Extra Fee
-                                    <p>₹{codFee}</p>
-                                </div>
-                            )}
-                            <hr className='border-gray-400' />
-                            <div className='flex justify-between font-semibold text-lg'>
-                                Total
-                                <p>₹{totalAmount}</p>
-                            </div>
-                            <div className='text-sm text-gray-600'>
-                                You saved ₹100 in this order
-                                {deliveryCharge === 0 && ' + FREE delivery'}
-                            </div>
-                        </div>
-
-                        {/* Delivery Date */}
-                        <div className='border rounded p-4'>
-                            <h2 className='text-lg font-semibold mb-2'>Delivery Details</h2>
-                            <p className='text-gray-700'>Estimated delivery by <strong>{formattedDeliveryDate}</strong></p>
+                <div className="lg:grid lg:grid-cols-12 lg:gap-12">
+                    {/* Left Column: Address & Payment */}
+                    <div className="lg:col-span-7 space-y-8">
+                        {/* Address Selection */}
+                        <div className="bg-white p-6 md:p-10 border border-gray-100 shadow-sm">
+                            <h2 className="text-[12px] font-bold tracking-[0.2em] uppercase text-black mb-6 border-b border-gray-100 pb-4">
+                                Shipping Details
+                            </h2>
+                            <AddressCard className="w-full" onAddressSelect={setSelectedAddress} />
                         </div>
 
                         {/* Payment Method */}
-                        <div className='border rounded p-4'>
-                            <h2 className='text-lg font-semibold mb-2'>Payment Method</h2>
-                            <div className='space-y-2'>
-                                {/* <label className='flex items-center gap-2 cursor-pointer'>
+                        <div className="bg-white p-6 md:p-10 border border-gray-100 shadow-sm">
+                            <h2 className="text-[12px] font-bold tracking-[0.2em] uppercase text-black mb-6 border-b border-gray-100 pb-4">
+                                Payment Method
+                            </h2>
+                            <div className="space-y-4">
+                                <label className={`flex items-center p-4 border cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
                                     <input
-                                        type='radio'
-                                        name='paymentMethod'
-                                        value='online'
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value="online"
                                         checked={paymentMethod === 'online'}
                                         onChange={(e) => setPaymentMethod(e.target.value)}
+                                        className="w-4 h-4 text-black focus:ring-black border-gray-300"
                                     />
-                                    <span>Pay Online (Razorpay)</span>
-                                </label> */}
-                                <label className='flex items-center gap-2 cursor-pointer'>
+                                    <div className="ml-4">
+                                        <span className="block text-sm font-bold text-gray-900 tracking-wider uppercase text-[11px] md:text-sm">Pay Online</span>
+                                        <span className="block text-xs text-gray-500 mt-1">UPI, Credit Card, Debit Card, Net Banking</span>
+                                    </div>
+                                </label>
+                                
+                                <label className={`flex items-center p-4 border cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
                                     <input
-                                        type='radio'
-                                        name='paymentMethod'
-                                        value='cod'
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value="cod"
                                         checked={paymentMethod === 'cod'}
                                         onChange={(e) => setPaymentMethod(e.target.value)}
+                                        className="w-4 h-4 text-black focus:ring-black border-gray-300"
                                     />
-                                    <span>Cash on Delivery (COD)</span>
+                                    <div className="ml-4">
+                                        <span className="block text-sm font-bold text-gray-900 tracking-wider uppercase text-[11px] md:text-sm">Cash on Delivery</span>
+                                        <span className="block text-xs text-gray-500 mt-1">Pay when your order arrives. Extra ₹15 fee applies.</span>
+                                    </div>
                                 </label>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Place Order Button */}
-                        <button
-                            onClick={handlePlaceOrder}
-                            disabled={processing}
-                            className='w-full bg-blue-600 text-white py-3 rounded font-semibold disabled:opacity-50'
-                        >
-                            {processing ? 'Processing...' : `Place Order (${paymentMethod === 'cod' ? 'COD' : 'Pay Online'})`}
-                        </button>
-                    </>
-                )}
+                    {/* Right Column: Order Summary */}
+                    <div className="lg:col-span-5 mt-8 lg:mt-0">
+                        <div className="bg-white p-6 md:p-10 border border-black shadow-sm sticky top-24">
+                            <h2 className="text-[12px] font-bold tracking-[0.2em] uppercase text-black mb-6 border-b border-gray-100 pb-4">
+                                Order Summary
+                            </h2>
+                            
+                            {/* Items List */}
+                            <div className="space-y-4 mb-8 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2">
+                                {Array.isArray(cartItems) && cartItems.map((item, index) => (
+                                    <div key={index} className="flex gap-4">
+                                        <div className="w-20 h-20 bg-[#f9f9f9] border border-gray-100 p-2 flex-shrink-0">
+                                            <img
+                                                src={getImagePath(item.product?.image?.[item.product?.coverImageIndex] || item.product?.image?.[0])}
+                                                alt={item.product?.name}
+                                                className="w-full h-full object-contain mix-blend-multiply"
+                                                onError={(e) => {e.target.src='/ErrorImage.png'}}
+                                            />
+                                        </div>
+                                        <div className="flex-1 flex flex-col justify-center">
+                                            <h3 className="text-[10px] md:text-[11px] font-bold text-gray-900 uppercase tracking-widest line-clamp-1">{item.product?.name}</h3>
+                                            <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">Qty: {item.quantity} | Size: {item.size}</p>
+                                            <p className="text-xs md:text-sm font-bold text-black mt-2">₹{Number(item.product?.price).toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Calculations */}
+                            <div className="space-y-3 text-[10px] md:text-[11px] uppercase tracking-wider font-bold text-gray-500 border-t border-gray-100 pt-6">
+                                <div className="flex justify-between">
+                                    <span>Subtotal</span>
+                                    <span className="text-gray-900">₹{totalPrice.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Delivery Charge</span>
+                                    <span className="text-gray-900">
+                                        {loadingDelivery ? 'Calculating...' : (deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`)}
+                                    </span>
+                                </div>
+                                {paymentMethod === 'cod' && (
+                                    <div className="flex justify-between text-yellow-700">
+                                        <span>COD Extra Fee</span>
+                                        <span className="">₹{codFee}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="border-t border-black mt-6 pt-6 flex justify-between items-center mb-8">
+                                <span className="text-[11px] md:text-sm font-bold tracking-widest uppercase">Total</span>
+                                <span className="text-xl md:text-2xl font-serif text-black">₹{totalAmount.toLocaleString()}</span>
+                            </div>
+
+                            <p className="text-[10px] text-gray-500 mb-6 text-center italic tracking-wider">
+                                ESTIMATED DELIVERY BY {formattedDeliveryDate}
+                            </p>
+
+                            <button
+                                onClick={handlePlaceOrder}
+                                disabled={processing || loadingDelivery}
+                                className="w-full bg-black text-white hover:bg-gray-900 transition-colors py-4 text-[10px] md:text-[11px] font-bold tracking-[0.3em] uppercase disabled:opacity-50"
+                            >
+                                {processing ? 'Processing...' : `Place Order • ₹${totalAmount.toLocaleString()}`}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </>
+        </div>
     );
 }
 

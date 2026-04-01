@@ -24,7 +24,7 @@ import {
 } from '../../redux/slices/addressSlice';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../components/Header.jsx';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { FaUser, FaBoxOpen, FaMapMarkerAlt, FaChevronRight, FaTrash, FaSignOutAlt } from 'react-icons/fa';
 
 function Profile() {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useSwipe } from '../hooks/useSwipe';
 
 const BestSellers = () => {
     const [hoveredProduct, setHoveredProduct] = useState(null);
@@ -7,6 +8,11 @@ const BestSellers = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentSlide, setCurrentSlide] = useState(0);
+
+    const { onTouchStart, onTouchMove, onTouchEnd } = useSwipe({
+        onSwipedLeft: () => setCurrentSlide(prev => (prev < products.length - 1 ? prev + 1 : 0)),
+        onSwipedRight: () => setCurrentSlide(prev => (prev > 0 ? prev - 1 : products.length - 1))
+    });
 
     const getImagePath = (imageName) => {
         if (!imageName) return '/ring_1.jpeg';
@@ -63,11 +69,14 @@ const BestSellers = () => {
 
                 <div className="relative overflow-hidden">
                     <div 
-                        className="mobile-slider md:grid md:grid-cols-3 gap-6 md:gap-12"
+                        className="mobile-slider md:grid md:grid-cols-3 gap-6 md:gap-12 transition-transform duration-500"
                         style={{ 
-                            "--slide-transform": `-${currentSlide * 100}%`,
+                            "--slide-transform": `calc(-${currentSlide * 80}% - ${currentSlide * 1}rem)`,
                             width: '100%',
                         }}
+                        onTouchStart={onTouchStart}
+                        onTouchMove={onTouchMove}
+                        onTouchEnd={onTouchEnd}
                     >
                         {bestSellers.map((product) => (
                             <div

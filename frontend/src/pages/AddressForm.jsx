@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { addAddressFailure, addAddressStart, addAddressSuccess } from '../redux/slices/addressSlice.js';
 import { useSelector, useDispatch } from 'react-redux';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 

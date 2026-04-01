@@ -6,8 +6,12 @@ import FloatingWhatsApp from '../../components/FloatingWhatsApp';
 import { useDispatch, useSelector } from 'react-redux';
 import { getProductByIdFailure, getProductByIdStart, getProductByIdSuccess } from '../../redux/slices/productSlice';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { addCartItemFailure, addCartItemStart, addCartItemSuccess } from '../../redux/slices/cartSlice';
+import toast from 'react-hot-toast';
+import { 
+    addCartItemFailure, addCartItemStart, addCartItemSuccess, addToCartGuest,
+    removeCartItemStart, removeCartItemSuccess, removeCartItemFailure, removeFromCartGuest,
+    updateCartItemQuantityStart, updateCartItemQuantitySuccess, updateCartItemQuantityFailure, updateQuantityGuest
+} from '../../redux/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '../../redux/slices/wishlistSlice';
 import { FaHeart, FaRegHeart, FaStar, FaPercentage, FaExchangeAlt, FaPlus, FaShieldAlt, FaAward, FaThumbsUp } from 'react-icons/fa';
 import { HiOutlineArrowPath } from 'react-icons/hi2';
@@ -20,8 +24,8 @@ function ProductDescription() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const { currentUser } = useSelector(state => state.user);
+    const { cartItems = [] } = useSelector(state => state.cart);
     const [product, setProduct] = useState(null);
-    const [isAddedToCart, setIsAddedToCart] = useState(false);
     const { wishlistIds } = useSelector(state => state.wishlist);
 
     // Local states for selections from mockup
@@ -42,7 +46,35 @@ function ProductDescription() {
         { id: 'YS', label: 'Yellow Silver' }
     ];
 
-    const sizes = ['12', '13', '14', '15'];
+    const RING_SIZES = ['2/0', '2/1', '2/2', '2/3', '2/4', '2/5', '2/6', '2/7', '2/8', '2/9', '2/10'];
+    const BANGLE_SIZES = ['2/0', '2/1', '2/2', '2/3', '2/4', '2/5', '2/6', '2/7', '2/8', '2/9', '2/10'];
+
+    const categoryLower = product?.categoryName?.toLowerCase() || '';
+    const isRing = categoryLower.includes('ring');
+    const isBangle = categoryLower.includes('bangle');
+
+    const sizes = (isRing || isBangle) ? RING_SIZES : ['12', '13', '14', '15'];
+
+    useEffect(() => {
+        if (product) {
+            if (isRing || isBangle) setSelectedSize('2/4');
+            else if (sizes.length > 0) setSelectedSize(sizes[0]);
+            else setSelectedSize('');
+        }
+    }, [product, isRing, isBangle]);
+
+    const currentCartItem = Array.isArray(cartItems) 
+        ? cartItems.find(item => item.product?._id === productId && item.size === selectedSize) 
+        : null;
+    const currentQuantity = currentCartItem ? currentCartItem.quantity : 0;
+
+    const scrollRef = React.useRef(null);
+    const scrollSizes = (direction) => {
+        if (scrollRef.current) {
+            const scrollAmount = direction === 'left' ? -200 : 200;
+            scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    };
 
     const handleWishlistClick = (id) => {
         if (!currentUser) {
@@ -60,9 +92,6 @@ function ProductDescription() {
 
     useEffect(() => {
         fetchProduct(productId);
-        if (currentUser) {
-            fetchCartItems(productId);
-        }
     }, [productId, currentUser]);
 
     const fetchProduct = async (id) => {
@@ -97,21 +126,14 @@ function ProductDescription() {
         }
     };
 
-    const fetchCartItems = async (id) => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_PORT}/api/cart/getcart/${currentUser._id}`);
-            if (!response.ok) throw new Error('Failed to fetch cart');
-            const data = await response.json();
-            const isInCart = data.some(item => item.product._id === id);
-            setIsAddedToCart(isInCart);
-        } catch (error) {
-            console.error('Cart error:', error);
-        }
-    };
-
     const handleAddToCart = async () => {
+        if (currentUser?.userType === 'admin') {
+            toast.error('Admins cannot add items to the cart');
+            return;
+        }
         if (!currentUser) {
-            toast.error('Please log in to add items to the cart');
+            dispatch(addToCartGuest({ product, size: selectedSize }));
+            toast.success('Product added to cart');
             return;
         }
         try {
@@ -119,16 +141,62 @@ function ProductDescription() {
             const res = await fetch(`${import.meta.env.VITE_PORT}/api/cart/addToCart/${productId}`, {
                 method: 'POST',
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId: currentUser._id })
+                body: JSON.stringify({ userId: currentUser._id, size: selectedSize })
             });
             if (!res.ok) throw new Error('Failed to add to cart');
             const data = await res.json();
             dispatch(addCartItemSuccess(data));
-            setIsAddedToCart(true);
             toast.success('Product added to cart');
         } catch (error) {
             dispatch(addCartItemFailure(error.message));
             toast.error('Could not add to cart');
+        }
+    };
+
+    const handleDelete = async (itemId) => {
+        if (!currentUser) {
+            dispatch(removeFromCartGuest(itemId));
+            toast.success("Removed from cart");
+            return;
+        }
+        dispatch(removeCartItemStart());
+        try {
+            const res = await fetch(`${import.meta.env.VITE_PORT}/api/cart/delete/${itemId}`, {
+                method: "DELETE"
+            });
+            if (!res.ok) throw new Error('Failed to delete item');
+            dispatch(removeCartItemSuccess(itemId));
+            toast.success("Removed from cart");
+        } catch (error) {
+            dispatch(removeCartItemFailure(error.message));
+            toast.error("Error removing item");
+        }
+    };
+
+    const updateQuantity = async (quantity) => {
+        if (!currentCartItem) return;
+        const cartItemId = currentCartItem.cartItemId;
+
+        if (quantity <= 0) {
+            return handleDelete(cartItemId);
+        }
+
+        if (!currentUser) {
+            dispatch(updateQuantityGuest({ cartItemId, quantity }));
+            return;
+        }
+        dispatch(updateCartItemQuantityStart());
+        try {
+            const res = await fetch(`${import.meta.env.VITE_PORT}/api/cart/update/${cartItemId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quantity }),
+            });
+            if (!res.ok) throw new Error('Failed to update quantity');
+            dispatch(updateCartItemQuantitySuccess({ cartItemId, quantity }));
+        } catch (error) {
+            dispatch(updateCartItemQuantityFailure(error.message));
+            toast.error("Failed to update quantity");
         }
     };
 
@@ -248,27 +316,42 @@ function ProductDescription() {
                             </div>
 
                             {/* Select Size */}
-                            <div className="space-y-6">
-                                <div className="flex justify-between items-center">
-                                    <h3 className="text-lg text-gray-800 font-medium tracking-tight">Select Size</h3>
-                                    <button className="text-[10px] uppercase underline underline-offset-4 tracking-[0.2em] font-bold text-gray-800 hover:text-black">Size Guide</button>
-                                </div>
-                                <div className="flex items-center space-x-3">
-                                    <button className="p-2 border border-gray-100 rounded-sm text-gray-400"><IoIosArrowBack /></button>
-                                    <div className="flex gap-4">
-                                        {sizes.map((size) => (
-                                            <button 
-                                                key={size}
-                                                onClick={() => setSelectedSize(size)}
-                                                className={`w-14 h-14 border flex items-center justify-center text-sm transition-all ${selectedSize === size ? 'border-black bg-white text-black font-bold' : 'border-gray-50 bg-gray-50 text-gray-400 hover:border-gray-200'}`}
-                                            >
-                                                {size}
-                                            </button>
-                                        ))}
+                            {sizes.length > 0 && (
+                                <div className="space-y-6">
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-lg text-gray-800 font-medium tracking-tight">Select Size</h3>
+                                        <button className="text-[10px] uppercase underline underline-offset-4 tracking-[0.2em] font-bold text-gray-800 hover:text-black">Size Guide</button>
                                     </div>
-                                    <button className="p-2 border border-gray-100 rounded-sm text-gray-400"><IoIosArrowForward /></button>
+                                    <div className="flex items-center space-x-3">
+                                        <button 
+                                            onClick={() => scrollSizes('left')}
+                                            className="p-2 border border-gray-100 rounded-sm text-gray-400 hover:text-black transition-colors"
+                                        >
+                                            <IoIosArrowBack />
+                                        </button>
+                                        <div 
+                                            ref={scrollRef}
+                                            className="flex gap-4 overflow-x-auto custom-scrollbar scroll-smooth pb-4"
+                                        >
+                                            {sizes.map((size) => (
+                                                <button 
+                                                    key={size}
+                                                    onClick={() => setSelectedSize(size)}
+                                                    className={`w-14 h-14 min-w-[56px] border flex items-center justify-center text-sm transition-all ${selectedSize === size ? 'border-black bg-white text-black font-bold' : 'border-gray-50 bg-gray-50 text-gray-400 hover:border-gray-200'}`}
+                                                >
+                                                    {size}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <button 
+                                            onClick={() => scrollSizes('right')}
+                                            className="p-2 border border-gray-100 rounded-sm text-gray-400 hover:text-black transition-colors"
+                                        >
+                                            <IoIosArrowForward />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Add Ons */}
                             <div className="space-y-4">
@@ -315,16 +398,37 @@ function ProductDescription() {
                                     {isWishlisted(product?._id) ? <FaHeart className="h-5 w-5" /> : <FaRegHeart className="h-5 w-5" />}
                                 </button>
                                 
-                                <button 
-                                    onClick={handleAddToCart}
-                                    className="flex-grow h-[60px] bg-black text-white px-8 flex items-center justify-between group overflow-hidden relative"
-                                >
-                                    <div className="flex items-baseline space-x-3">
-                                        <span className="text-lg font-bold">₹{Number(product?.price).toLocaleString('en-IN')}</span>
-                                        <span className="text-xs text-gray-400 line-through">₹{mrp.toLocaleString('en-IN')}</span>
+                                {currentQuantity > 0 ? (
+                                    <div className="flex-grow h-[60px] flex items-center justify-between border border-black bg-white">
+                                        <button 
+                                            onClick={() => updateQuantity(currentQuantity - 1)}
+                                            className="w-[60px] h-full flex items-center justify-center border-r border-gray-100 hover:bg-gray-50 transition-colors"
+                                        >
+                                            <span className="text-lg font-bold text-black">-</span>
+                                        </button>
+                                        <div className="flex-grow flex flex-col items-center justify-center text-center">
+                                            <span className="text-xl font-bold">{currentQuantity}</span>
+                                            <span className="text-[8px] tracking-[0.2em] text-gray-400 uppercase font-bold">In Cart</span>
+                                        </div>
+                                        <button 
+                                            onClick={() => updateQuantity(currentQuantity + 1)}
+                                            className="w-[60px] h-full flex items-center justify-center border-l border-gray-100 hover:bg-gray-50 transition-colors"
+                                        >
+                                            <span className="text-lg font-bold text-black">+</span>
+                                        </button>
                                     </div>
-                                    <span className="text-[11px] font-bold tracking-[0.3em] uppercase group-hover:translate-x-2 transition-transform duration-300">Add to Cart</span>
-                                </button>
+                                ) : (
+                                    <button 
+                                        onClick={handleAddToCart}
+                                        className="flex-grow h-[60px] bg-black text-white px-8 flex items-center justify-between group overflow-hidden relative"
+                                    >
+                                        <div className="flex items-baseline space-x-3">
+                                            <span className="text-lg font-bold">₹{Number(product?.price).toLocaleString('en-IN')}</span>
+                                            <span className="text-xs text-gray-400 line-through">₹{mrp.toLocaleString('en-IN')}</span>
+                                        </div>
+                                        <span className="text-[11px] font-bold tracking-[0.3em] uppercase group-hover:translate-x-2 transition-transform duration-300">Add to Cart</span>
+                                    </button>
+                                )}
                             </div>
 
                             <p className="text-center text-[12px] text-gray-500 tracking-wide">

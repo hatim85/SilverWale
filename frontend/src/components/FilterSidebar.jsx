@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaPlus, FaMinus, FaTimes } from 'react-icons/fa';
 import { GiBigDiamondRing, GiNecklace } from 'react-icons/gi'; // Example icons
 
-const FilterSidebar = ({ selectedFilters, onFilterChange, onClearAll }) => {
+const FilterSidebar = ({ selectedFilters, onFilterChange, onClearAll, currentCount }) => {
     const [openSections, setOpenSections] = useState({
         'Jewellery Types': true,
         'Price Range': true
@@ -35,14 +35,29 @@ const FilterSidebar = ({ selectedFilters, onFilterChange, onClearAll }) => {
         { id: 'p5', name: 'Over ₹50,000', min: 50000, max: 1000000 },
     ];
 
+    const totalItems = categories.reduce((acc, cat) => acc + (Array.isArray(cat.products) ? cat.products.length : 0), 0);
+
     const filterSections = [
-        { name: 'Jewellery Types', type: 'category', data: categories.filter(c => c && c.name).map(c => ({ id: c._id, name: c.name, type: 'category', icon: <GiBigDiamondRing className="inline mr-2" />, count: Array.isArray(c.products) ? c.products.length : 0 })) },
+        { 
+            name: 'Jewellery Types', 
+            type: 'category', 
+            data: [
+                { id: 'all', name: 'All Collection', type: 'category', icon: <GiNecklace className="inline mr-2" />, count: totalItems },
+                ...categories.filter(c => c && c.name).map(c => ({ 
+                    id: c._id, 
+                    name: c.name, 
+                    type: 'category', 
+                    icon: <GiBigDiamondRing className="inline mr-2" />, 
+                    count: Array.isArray(c.products) ? c.products.length : 0 
+                }))
+            ] 
+        },
         { name: 'Price Range', type: 'price', data: priceRanges.map(p => ({ ...p, type: 'price' })) }
     ];
 
     return (
         <aside className="w-full md:w-64 flex-shrink-0 bg-white pr-4">
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex justify-between items-center mb-2">
                 <h2 className="text-xl font-medium tracking-wide text-gray-800">Filters</h2>
                 <button 
                     onClick={onClearAll}
@@ -50,6 +65,12 @@ const FilterSidebar = ({ selectedFilters, onFilterChange, onClearAll }) => {
                 >
                     Clear All
                 </button>
+            </div>
+
+            <div className="mb-8 pl-0.5">
+                <p className="text-[10px] text-gray-400 uppercase tracking-[0.15em] font-bold">
+                    Showing <span className="text-black font-extrabold">{currentCount || 0}</span> Results
+                </p>
             </div>
 
             {/* Selected Filter Tags */}

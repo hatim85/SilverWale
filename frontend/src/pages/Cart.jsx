@@ -3,7 +3,7 @@ import { IoMdClose } from 'react-icons/io';
 import { FaShieldAlt, FaRegEye } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { 
     fetchCartItemsRequest, 
     fetchCartItemsSuccess, 
@@ -13,7 +13,9 @@ import {
     removeCartItemFailure, 
     updateCartItemQuantityStart, 
     updateCartItemQuantitySuccess, 
-    updateCartItemQuantityFailure 
+    updateCartItemQuantityFailure,
+    removeFromCartGuest,
+    updateQuantityGuest
 } from '../redux/slices/cartSlice';
 import Header from '../components/Header';
 
@@ -52,6 +54,11 @@ function Cart() {
     };
 
     const handleDelete = async (itemId) => {
+        if (!userId) {
+            dispatch(removeFromCartGuest(itemId));
+            toast.success("Item removed");
+            return;
+        }
         dispatch(removeCartItemStart());
         try {
             const res = await fetch(`${import.meta.env.VITE_PORT}/api/cart/delete/${itemId}`, {
@@ -66,6 +73,10 @@ function Cart() {
     };
 
     const updateCartItemQuantity = async (cartItemId, quantity) => {
+        if (!userId) {
+            dispatch(updateQuantityGuest({ cartItemId, quantity }));
+            return;
+        }
         dispatch(updateCartItemQuantityStart());
         try {
             const res = await fetch(`${import.meta.env.VITE_PORT}/api/cart/update/${cartItemId}`, {
@@ -84,16 +95,6 @@ function Cart() {
     const subtotalMRP = validatedCartItems.reduce((acc, item) => acc + ((item.product?.price || 0) + 5000) * item.quantity, 0);
     const orderTotal = validatedCartItems.reduce((acc, item) => acc + (item.product?.price || 0) * item.quantity, 0);
     const productDiscount = subtotalMRP - orderTotal;
-
-    if (!userId) return (
-        <div className="min-h-screen bg-white">
-            <Header />
-            <div className="flex flex-col items-center justify-center py-20">
-                <p className="text-gray-400 uppercase tracking-widest text-xs mb-6">Please sign in to view your cart</p>
-                <Link to="/signin" className="bg-black text-white px-10 py-3 text-[10px] font-bold uppercase tracking-widest">Sign In</Link>
-            </div>
-        </div>
-    );
 
     return (
         <div className="min-h-screen bg-[#FDFDFD]">
@@ -142,7 +143,14 @@ function Cart() {
                                             {/* Details */}
                                             <div className='flex-grow space-y-4 pt-2'>
                                                 <div className="flex justify-between items-start">
-                                                    <h2 className='text-xs md:text-sm font-medium text-gray-600 leading-relaxed max-w-md'>{item.product?.name}</h2>
+                                                    <h2 className='text-xs md:text-sm font-medium text-gray-600 leading-relaxed max-w-md'>
+                                                        {item.product?.name}
+                                                        {item.size && (
+                                                            <span className="block text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-bold">
+                                                                Size: {item.size}
+                                                            </span>
+                                                        )}
+                                                    </h2>
                                                     <button 
                                                         onClick={() => handleDelete(item.cartItemId)}
                                                         className="text-gray-300 hover:text-red-500 transition-colors"
@@ -222,7 +230,14 @@ function Cart() {
                             </div>
 
                             <button 
-                                onClick={() => navigate('/checkout')}
+                                onClick={() => {
+                                    if (currentUser) {
+                                        navigate('/checkout');
+                                    } else {
+                                        toast.info("Please sign in to complete your purchase");
+                                        navigate('/signin', { state: { from: '/checkout' } });
+                                    }
+                                }}
                                 className='w-full bg-black text-white py-4 rounded-sm flex items-center justify-center space-x-3 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-800 transition-all shadow-xl active:scale-[0.98]'
                             >
                                 <FaShieldAlt className="text-white h-3 w-3" />
