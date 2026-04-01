@@ -23,12 +23,12 @@ function Dashboard() {
   }, [location.search])
   return (
     <>
-      <div className='flex justify-center items-center w-full min-h-[100px] bg-white border-b border-gray-100 px-8'>
-        <Link to="/" className="absolute left-8 flex items-center space-x-2 text-gray-500 hover:text-black transition-colors uppercase tracking-widest text-xs font-bold">
+      <div className='flex flex-col md:flex-row md:justify-center items-start md:items-center w-full min-h-[100px] bg-white border-b border-gray-100 py-6 md:py-0 px-6 md:px-8 relative gap-4 md:gap-0'>
+        <Link to="/" className="md:absolute md:left-8 flex items-center space-x-2 text-gray-500 hover:text-black transition-colors uppercase tracking-widest text-[10px] md:text-xs font-bold">
           <FaHome className='h-4 w-4' />
-          <span>Back</span>
+          <span>Back to Store</span>
         </Link>
-        <h1 className='font-serif italic text-3xl md:text-4xl text-gray-800 tracking-tight'>Admin Control Panel</h1>
+        <h1 className='font-serif italic text-2xl md:text-4xl text-gray-800 tracking-tight text-center w-full'>Admin Control Panel</h1>
       </div>
       <div className="flex flex-col md:flex-row min-h-screen w-full">
         <DashSidebar />
