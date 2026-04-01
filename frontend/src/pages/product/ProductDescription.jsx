@@ -46,18 +46,19 @@ function ProductDescription() {
         { id: 'YS', label: 'Yellow Silver' }
     ];
 
-    const RING_SIZES = ['2/0', '2/1', '2/2', '2/3', '2/4', '2/5', '2/6', '2/7', '2/8', '2/9', '2/10'];
+    const RING_SIZES = ['10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22'];
     const BANGLE_SIZES = ['2/0', '2/1', '2/2', '2/3', '2/4', '2/5', '2/6', '2/7', '2/8', '2/9', '2/10'];
 
     const categoryLower = product?.categoryName?.toLowerCase() || '';
     const isRing = categoryLower.includes('ring');
-    const isBangle = categoryLower.includes('bangle');
+    const isBangle = categoryLower.includes('bangle') || categoryLower.includes('bracelet');
 
-    const sizes = (isRing || isBangle) ? RING_SIZES : ['12', '13', '14', '15'];
+    const sizes = isBangle ? BANGLE_SIZES : (isRing ? RING_SIZES : []);
 
     useEffect(() => {
         if (product) {
-            if (isRing || isBangle) setSelectedSize('2/4');
+            if (isBangle) setSelectedSize('2/4');
+            else if (isRing) setSelectedSize('14');
             else if (sizes.length > 0) setSelectedSize(sizes[0]);
             else setSelectedSize('');
         }
