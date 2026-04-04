@@ -10,7 +10,8 @@ import toast from 'react-hot-toast';
 import { 
     addCartItemFailure, addCartItemStart, addCartItemSuccess, addToCartGuest,
     removeCartItemStart, removeCartItemSuccess, removeCartItemFailure, removeFromCartGuest,
-    updateCartItemQuantityStart, updateCartItemQuantitySuccess, updateCartItemQuantityFailure, updateQuantityGuest
+    updateCartItemQuantityStart, updateCartItemQuantitySuccess, updateCartItemQuantityFailure, updateQuantityGuest,
+    fetchCartItemsSuccess
 } from '../../redux/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '../../redux/slices/wishlistSlice';
 import { FaHeart, FaRegHeart, FaStar, FaPercentage, FaExchangeAlt, FaPlus, FaShieldAlt, FaAward, FaThumbsUp } from 'react-icons/fa';
@@ -65,7 +66,7 @@ function ProductDescription() {
     }, [product, isRing, isBangle]);
 
     const currentCartItem = Array.isArray(cartItems) 
-        ? cartItems.find(item => item.product?._id === productId && item.size === selectedSize) 
+        ? cartItems.find(item => item.product?._id === productId && (item.size === selectedSize || (!item.size && !selectedSize))) 
         : null;
     const currentQuantity = currentCartItem ? currentCartItem.quantity : 0;
 
@@ -145,8 +146,12 @@ function ProductDescription() {
                 body: JSON.stringify({ userId: currentUser._id, size: selectedSize })
             });
             if (!res.ok) throw new Error('Failed to add to cart');
-            const data = await res.json();
-            dispatch(addCartItemSuccess(data));
+            // Re-fetch the full cart to ensure consistent data shape
+            const cartRes = await fetch(`${import.meta.env.VITE_PORT}/api/cart/getcart/${currentUser._id}`);
+            if (cartRes.ok) {
+                const cartData = await cartRes.json();
+                dispatch(fetchCartItemsSuccess(Array.isArray(cartData) ? cartData : []));
+            }
             toast.success('Product added to cart');
         } catch (error) {
             dispatch(addCartItemFailure(error.message));
@@ -155,6 +160,10 @@ function ProductDescription() {
     };
 
     const handleDelete = async (itemId) => {
+        if (currentUser?.userType === 'admin') {
+            toast.error('Admins cannot modify cart');
+            return;
+        }
         if (!currentUser) {
             dispatch(removeFromCartGuest(itemId));
             toast.success("Removed from cart");
@@ -175,6 +184,10 @@ function ProductDescription() {
     };
 
     const updateQuantity = async (quantity) => {
+        if (currentUser?.userType === 'admin') {
+            toast.error('Admins cannot modify cart');
+            return;
+        }
         if (!currentCartItem) return;
         const cartItemId = currentCartItem.cartItemId;
 
@@ -399,7 +412,7 @@ function ProductDescription() {
                                     {isWishlisted(product?._id) ? <FaHeart className="h-5 w-5" /> : <FaRegHeart className="h-5 w-5" />}
                                 </button>
                                 
-                                {currentQuantity > 0 ? (
+                                {currentUser?.userType !== 'admin' && currentQuantity > 0 ? (
                                     <div className="flex-grow h-[60px] flex items-center justify-between border border-black bg-white">
                                         <button 
                                             onClick={() => updateQuantity(currentQuantity - 1)}

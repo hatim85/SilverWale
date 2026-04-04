@@ -20,12 +20,16 @@ import {
   fetchAddressesFailure,
   deleteAddressStart,
   deleteAddressSuccess,
-  deleteAddressFailure
+  deleteAddressFailure,
+  addAddressStart,
+  addAddressSuccess,
+  addAddressFailure,
+  swapDefaultAddress
 } from '../../redux/slices/addressSlice';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../components/Header.jsx';
 import toast from 'react-hot-toast';
-import { FaUser, FaBoxOpen, FaMapMarkerAlt, FaChevronRight, FaTrash, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaBoxOpen, FaMapMarkerAlt, FaChevronRight, FaTimes, FaSignOutAlt, FaPlus } from 'react-icons/fa';
 
 function Profile() {
   const dispatch = useDispatch();
@@ -37,6 +41,13 @@ function Profile() {
   
   const searchParams = new URLSearchParams(location.search);
   const currentTab = searchParams.get('tab') || 'dashboard';
+
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: '', addressLine1: '', addressLine2: '',
+    city: '', postalCode: '', country: '', phoneNumber: ''
+  });
 
   useEffect(() => {
     if (currentUser?._id) {
@@ -113,9 +124,44 @@ function Profile() {
       });
       if (!response.ok) throw new Error('Failed to delete address');
       dispatch(deleteAddressSuccess(addressId));
-      toast.success('Address deleted');
+      toast.success('Address removed');
     } catch (error) {
       dispatch(deleteAddressFailure(error.message));
+    }
+  };
+
+  const handleMakeDefault = (idx) => {
+    // idx is 1-based relative to the additional addresses (slice(1)), so actual index = idx + 1
+    dispatch(swapDefaultAddress(idx + 1));
+    toast.success('Default address updated');
+  };
+
+  const handleFormChange = (e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleAddAddress = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    dispatch(addAddressStart());
+    try {
+      const res = await fetch(`${import.meta.env.VITE_PORT}/api/user/createaddress/${currentUser._id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      if (!res.ok) throw new Error('Failed to add address');
+      const data = await res.json();
+      dispatch(addAddressSuccess(data));
+      toast.success('Address added');
+      setShowAddForm(false);
+      setFormData({ fullName: '', addressLine1: '', addressLine2: '', city: '', postalCode: '', country: '', phoneNumber: '' });
+      fetchAddresses();
+    } catch (err) {
+      dispatch(addAddressFailure(err.message));
+      toast.error('Could not save address');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -288,19 +334,22 @@ function Profile() {
                   <h2 className="text-3xl font-serif italic text-gray-800">Address Book</h2>
                 </div>
 
+                {/* Default Address */}
                 <div className="border border-gray-100">
                   <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-gray-600">Default Addresses</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-gray-600">Default Address</h3>
                   </div>
                   <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-12 text-xs">
                     <div className="space-y-3">
                       <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-black mb-4">Default Billing Address</h4>
                       {addresses.length > 0 ? (
-                         <div className="text-gray-500 space-y-1">
-                            <p className="font-bold text-gray-800">{addresses[0].fullName}</p>
-                            <p>{addresses[0].addressLine1}</p>
-                            <p>{addresses[0].city}, {addresses[0].postalCode}</p>
-                            <p>{addresses[0].country}</p>
+                        <div className="text-gray-500 space-y-1">
+                          <p className="font-bold text-gray-800">{addresses[0].fullName}</p>
+                          <p>{addresses[0].addressLine1}</p>
+                          {addresses[0].addressLine2 && <p>{addresses[0].addressLine2}</p>}
+                          <p>{addresses[0].city}, {addresses[0].postalCode}</p>
+                          <p>{addresses[0].country}</p>
+                          <p className="text-gray-400">{addresses[0].phoneNumber}</p>
                         </div>
                       ) : (
                         <p className="text-gray-400">You have not set a default billing address.</p>
@@ -310,10 +359,12 @@ function Profile() {
                       <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-black mb-4">Default Shipping Address</h4>
                       {addresses.length > 0 ? (
                         <div className="text-gray-500 space-y-1">
-                            <p className="font-bold text-gray-800">{addresses[0].fullName}</p>
-                            <p>{addresses[0].addressLine1}</p>
-                            <p>{addresses[0].city}, {addresses[0].postalCode}</p>
-                            <p>{addresses[0].country}</p>
+                          <p className="font-bold text-gray-800">{addresses[0].fullName}</p>
+                          <p>{addresses[0].addressLine1}</p>
+                          {addresses[0].addressLine2 && <p>{addresses[0].addressLine2}</p>}
+                          <p>{addresses[0].city}, {addresses[0].postalCode}</p>
+                          <p>{addresses[0].country}</p>
+                          <p className="text-gray-400">{addresses[0].phoneNumber}</p>
                         </div>
                       ) : (
                         <p className="text-gray-400">You have not set a default shipping address.</p>
@@ -322,26 +373,39 @@ function Profile() {
                   </div>
                 </div>
 
+                {/* Additional Addresses */}
                 <div className="border border-gray-100">
                   <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-gray-600">Additional Address Entries</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-gray-600">Additional Addresses</h3>
                   </div>
                   <div className="p-8">
                     {addresses.length > 1 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {addresses.slice(1).map((addr, idx) => (
-                          <div key={idx} className="relative p-6 bg-gray-50/30 border border-gray-50 group">
-                            <div className="text-xs text-gray-500 space-y-1">
-                              <p className="font-bold text-gray-800">{addr.fullName}</p>
-                              <p>{addr.addressLine1}</p>
-                              <p>{addr.city}, {addr.postalCode}</p>
-                              <p>{addr.country}</p>
-                            </div>
+                          <div key={addr._id} className="relative p-6 border border-gray-100 group hover:border-gray-300 transition-all space-y-4">
+                            {/* Delete button — X instead of trash */}
                             <button 
                               onClick={() => handleAddressDelete(addr._id)}
                               className="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors"
                             >
-                              <FaTrash className="h-3 w-3" />
+                              <FaTimes className="h-3.5 w-3.5" />
+                            </button>
+
+                            <div className="text-xs text-gray-500 space-y-1 pr-6">
+                              <p className="font-bold text-gray-800 text-sm">{addr.fullName}</p>
+                              <p>{addr.addressLine1}</p>
+                              {addr.addressLine2 && <p>{addr.addressLine2}</p>}
+                              <p>{addr.city}, {addr.postalCode}</p>
+                              <p>{addr.country}</p>
+                              <p className="text-gray-400">{addr.phoneNumber}</p>
+                            </div>
+
+                            {/* Make Default button */}
+                            <button 
+                              onClick={() => handleMakeDefault(idx)}
+                              className="text-[10px] font-bold uppercase tracking-widest border-b border-gray-300 pb-0.5 text-gray-400 hover:text-black hover:border-black transition-all"
+                            >
+                              Make Default
                             </button>
                           </div>
                         ))}
@@ -352,12 +416,14 @@ function Profile() {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center pt-6">
+                {/* Add Address Button */}
+                <div className="flex justify-between items-center pt-2">
                   <button 
-                    onClick={() => navigate('/addressform')}
-                    className="bg-black text-white px-10 py-4 rounded-sm text-[10px] font-bold uppercase tracking-widest hover:bg-gray-800 transition-all shadow-xl"
+                    onClick={() => setShowAddForm(true)}
+                    className="flex items-center space-x-3 bg-black text-white px-8 py-4 rounded-sm text-[10px] font-bold uppercase tracking-widest hover:bg-gray-800 transition-all shadow-xl"
                   >
-                    Add New Address
+                    <FaPlus className="h-3 w-3" />
+                    <span>Add New Address</span>
                   </button>
                   <Link to="/" className="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors">Back</Link>
                 </div>
@@ -366,6 +432,105 @@ function Profile() {
           </div>
         </div>
       </div>
+
+      {/* Inline Add Address Modal */}
+      {showAddForm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAddForm(false)} />
+          <div className="relative bg-white w-full max-w-lg mx-4 shadow-2xl animate-fadeIn overflow-y-auto max-h-[90vh]">
+            <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100">
+              <h2 className="text-xl font-serif italic text-gray-800">New Delivery Address</h2>
+              <button onClick={() => setShowAddForm(false)} className="text-gray-400 hover:text-black transition-colors">
+                <FaTimes className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddAddress} className="px-8 py-6 space-y-5">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Full Name</label>
+                <input
+                  name="fullName" value={formData.fullName} onChange={handleFormChange}
+                  placeholder="Recipient's full name" required
+                  className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Phone</label>
+                  <input
+                    name="phoneNumber" value={formData.phoneNumber} onChange={handleFormChange}
+                    placeholder="+91..." required
+                    className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Postal Code</label>
+                  <input
+                    name="postalCode" value={formData.postalCode} onChange={handleFormChange}
+                    placeholder="Pincode" required
+                    className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Address Line 1</label>
+                <input
+                  name="addressLine1" value={formData.addressLine1} onChange={handleFormChange}
+                  placeholder="House No., Building, Street" required
+                  className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Address Line 2 (Optional)</label>
+                <input
+                  name="addressLine2" value={formData.addressLine2} onChange={handleFormChange}
+                  placeholder="Locality, Landmark"
+                  className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">City</label>
+                  <input
+                    name="city" value={formData.city} onChange={handleFormChange}
+                    placeholder="City" required
+                    className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Country</label>
+                  <input
+                    name="country" value={formData.country} onChange={handleFormChange}
+                    placeholder="Country" required
+                    className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 flex space-x-4">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 bg-black text-white py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-gray-800 transition-all disabled:bg-gray-400"
+                >
+                  {saving ? 'Saving...' : 'Save Address'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(false)}
+                  className="px-6 border border-gray-200 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:border-black transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

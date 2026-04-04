@@ -20,7 +20,7 @@ const Craftsmanship = () => {
 
                 {/* Right Section: Content */}
                 <div className="w-full md:w-1/2 flex items-center justify-center p-8 md:p-16 lg:p-24 bg-[#f9f9f9]">
-                    <div className="text-center max-w-lg space-y-6">
+                    <div className="text-evenly max-w-lg space-y-6">
                         <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif tracking-widest text-gray-800 leading-tight">
                             Exceptional Craftsmanship, Handcrafted with Heart & Heritage
                         </h2>

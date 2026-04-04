@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { addToWishlist, removeFromWishlist } from '../redux/slices/wishlistSlice';
+import toast from 'react-hot-toast';
 import { useSwipe } from '../hooks/useSwipe';
 
 const MostLoved = () => {
-    const [wishlist, setWishlist] = useState({});
+    const dispatch = useDispatch();
+    const { wishlistIds } = useSelector((state) => state.wishlist);
+    const { currentUser } = useSelector((state) => state.user);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -59,8 +64,20 @@ const MostLoved = () => {
     }, []);
 
 
+    const isWishlisted = (id) => wishlistIds?.includes(id);
+
     const toggleWishlist = (id) => {
-        setWishlist(prev => ({ ...prev, [id]: !prev[id] }));
+        if (!currentUser) {
+            toast.error("Please login to add to wishlist");
+            return;
+        }
+        if (isWishlisted(id)) {
+            dispatch(removeFromWishlist(id));
+            toast.success("Removed from wishlist");
+        } else {
+            dispatch(addToWishlist(id));
+            toast.success("Added to wishlist");
+        }
     };
 
     const visibleProducts = products.slice(
@@ -97,7 +114,11 @@ const MostLoved = () => {
                                     onClick={() => toggleWishlist(product.id)}
                                     className="absolute top-3 right-3 z-10 text-gray-400 hover:text-black transition-colors"
                                 >
-                                    {wishlist[product.id] ? <FaHeart className="h-4 w-4 md:h-5 md:w-5 text-black" /> : <FaRegHeart className="h-4 w-4 md:h-5 md:w-5" />}
+                                    {isWishlisted(product.id) ? (
+                                        <FaHeart className="h-4 w-4 md:h-5 md:w-5 text-black" />
+                                    ) : (
+                                        <FaRegHeart className="h-4 w-4 md:h-5 md:w-5" />
+                                    )}
                                 </button>
 
                                 {/* Image Container */}

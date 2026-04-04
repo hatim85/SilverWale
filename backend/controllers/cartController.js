@@ -92,8 +92,29 @@ export const addToCart = async (req, res) => {
             await cart.save();
         }
 
-        cart = await Cart.findOne({ userId }).populate('cartItems').exec();
-        res.json(cartItem);
+        cart = await Cart.findOne({ userId }).populate({
+            path: 'cartItems',
+            populate: {
+                path: 'productId',
+                model: 'Product'
+            }
+        }).exec();
+
+        const makingCharge = await getMakingCharge();
+        const populatedCartItems = cart.cartItems.map(item => ({
+            cartItemId:item._id,
+            quantity: item.quantity,
+            size: item.size,
+            product: {
+                _id: item.productId?._id,
+                name: item.productId?.name,
+                price: Number(item.productId?.price || 0) + makingCharge,
+                image: item.productId?.image,
+                coverImageIndex: item.productId?.coverImageIndex,
+                description: item.productId?.description,
+            }
+        }));
+        res.json(populatedCartItems);
     } catch (error) {
         console.error('Error adding product to cart:', error);
         res.status(500).json({ message: 'Internal server error' });

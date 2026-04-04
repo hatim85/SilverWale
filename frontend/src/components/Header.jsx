@@ -4,6 +4,7 @@ import { FaUserGear } from 'react-icons/fa6';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchWishlist } from '../redux/slices/wishlistSlice';
+import { fetchCartItemsRequest, fetchCartItemsSuccess, fetchCartItemsFailure } from '../redux/slices/cartSlice';
 import ImageGallery from './ImageGallery';
 
 function Header() {
@@ -28,6 +29,19 @@ function Header() {
     useEffect(() => {
         if (currentUser) {
             dispatch(fetchWishlist());
+            
+            const fetchCart = async () => {
+                dispatch(fetchCartItemsRequest());
+                try {
+                    const response = await fetch(`${import.meta.env.VITE_PORT}/api/cart/getcart/${currentUser._id}`);
+                    if (!response.ok) throw new Error('Failed to fetch items');
+                    const data = await response.json();
+                    dispatch(fetchCartItemsSuccess(Array.isArray(data) ? data : []));
+                } catch (error) {
+                    dispatch(fetchCartItemsFailure(error.message));
+                }
+            };
+            fetchCart();
         }
     }, [currentUser, dispatch]);
 

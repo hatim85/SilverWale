@@ -9,19 +9,19 @@ function ImageGallery({ isCompact = false }) {
   // Dynamically referencing the specific public folder assets requested
   const banners = [
     {
-      image: '/ImageGallery_1.png',
+      image: '/ImageGallery_1.jpeg',
       title: 'Crafted For Brilliance',
       subtitle: 'Expertly designed lab-grown jewellery.',
       link: '/category/necklace',
     },
     {
-      image: '/ImageGallery_2.png',
+      image: '/ImageGallery_2.jpeg',
       title: 'Pure Elegance',
       subtitle: 'Timeless designs for every occasion.',
       link: '/category/ring',
     },
     {
-      image: '/ImageGallery_3.png',
+      image: '/ImageGallery_3.jpeg',
       title: 'The Modern Heirloom',
       subtitle: 'Luxury redefined for the contemporary woman.',
       link: '/category/earring',
@@ -43,19 +43,14 @@ function ImageGallery({ isCompact = false }) {
     return () => clearInterval(intervalRef.current);
   }, [currentIndex]);
 
-  const { onTouchStart, onTouchMove, onTouchEnd } = useSwipe({
+  const swipeHandlers = useSwipe({
     onSwipedLeft: goToNext,
-    onSwipedRight: goToPrevious
+    onSwipedRight: goToPrevious,
   });
 
   return (
-    <div className={`relative w-full overflow-hidden bg-white ${isCompact ? 'h-full' : ''}`}>
-      <div 
-        className={`relative w-full overflow-hidden group ${isCompact ? 'h-full' : 'h-[35vh] md:h-[85vh]'}`}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
+    <div className={`relative w-full overflow-hidden bg-white ${isCompact ? 'h-full' : 'mx-auto'}`}>
+      <div className={`relative w-full overflow-hidden group ${isCompact ? 'h-full' : 'aspect-[3/1]'}`}{...swipeHandlers}>
         {banners.map((banner, index) => (
           <div
             key={index}
@@ -73,10 +68,10 @@ function ImageGallery({ isCompact = false }) {
               {/* Premium Overlay */}
               {!isCompact && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-                  <div className="animate-fadeIn mt-auto mb-16 md:mb-20">
-                    <Link 
+                  <div className="animate-fadeIn mt-auto mb-10 md:mb-16">
+                    <Link
                       to={banner.link}
-                      className="inline-block bg-white/20 backdrop-blur-md border border-white text-white px-8 md:px-12 py-3 md:py-4 text-[9px] md:text-[10px] tracking-[0.3em] font-bold hover:bg-white hover:text-black transition-all duration-500 uppercase rounded-sm"
+                      className="inline-block bg-white/20 backdrop-blur-md border border-white text-white px-4 md:px-12 py-1.5 md:py-4 text-[8px] md:text-[10px] tracking-[0.3em] font-bold hover:bg-white hover:text-black transition-all duration-500 uppercase rounded-sm"
                     >
                       Shop Now
                     </Link>
@@ -111,12 +106,12 @@ function ImageGallery({ isCompact = false }) {
         </button>
 
         {/* Slider Dots */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
+        <div className="absolute bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
           {banners.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${currentIndex === index ? 'bg-white w-6' : 'bg-white/40 hover:bg-white/60'
+              className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all duration-300 ${currentIndex === index ? 'bg-white w-6 md:w-10' : 'bg-white/40 hover:bg-white/60'
                 }`}
             />
           ))}

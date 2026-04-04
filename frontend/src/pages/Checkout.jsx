@@ -184,7 +184,7 @@ function Checkout() {
                                 Payment Method
                             </h2>
                             <div className="space-y-4">
-                                <label className={`flex items-center p-4 border cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                                {/* <label className={`flex items-center p-4 border cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
                                     <input
                                         type="radio"
                                         name="paymentMethod"
@@ -197,7 +197,7 @@ function Checkout() {
                                         <span className="block text-sm font-bold text-gray-900 tracking-wider uppercase text-[11px] md:text-sm">Pay Online</span>
                                         <span className="block text-xs text-gray-500 mt-1">UPI, Credit Card, Debit Card, Net Banking</span>
                                     </div>
-                                </label>
+                                </label> */}
                                 
                                 <label className={`flex items-center p-4 border cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
                                     <input

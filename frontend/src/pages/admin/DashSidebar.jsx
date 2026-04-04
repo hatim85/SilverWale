@@ -35,6 +35,8 @@ function DashSidebar() {
         const tabFromUrl=urlParams.get('tab');
         if(tabFromUrl){
             setTab(tabFromUrl)
+        } else {
+            setTab('products')
         }
     },[location.search])
   return (

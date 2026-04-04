@@ -126,11 +126,11 @@ function CategoryUpdate() {
 
   return (
     <div className="space-y-6 p-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Update Category</h2>
+      <div className="flex items-center justify-between mb-8 border-b border-gray-100 pb-6">
+        <h2 className="text-2xl font-serif italic text-gray-800">Update Category</h2>
         <button
           type="button"
-          className="bg-gray-200 px-4 py-2 rounded"
+          className="bg-white border border-gray-200 text-gray-600 px-6 py-2 rounded-sm text-[10px] font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors"
           onClick={() => navigate('/dashboard?tab=categories')}
         >
           Back
@@ -141,64 +141,81 @@ function CategoryUpdate() {
         <div>Loading...</div>
       ) : (
         <>
-          <form onSubmit={handleUpdateName} className="bg-white p-4 rounded shadow space-y-4">
-            <h3 className="font-semibold">Name</h3>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Category name"
-              className="border rounded p-2 w-full md:w-1/2"
-            />
+          <form onSubmit={handleUpdateName} className="bg-white p-6 rounded-sm shadow-sm border border-gray-100 space-y-8">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Category Details</h3>
+            <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Name</label>
+                <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Rings"
+                className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                />
+            </div>
             <button
               type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded"
+              className="bg-black text-white px-12 py-4 rounded-sm text-xs font-bold uppercase tracking-[0.2em] hover:bg-gray-800 transition-all disabled:bg-gray-400"
               disabled={saving}
             >
-              {saving ? 'Saving...' : 'Update Name'}
+              {saving ? 'Updating...' : 'Update Name'}
             </button>
           </form>
 
-          <form onSubmit={handleUpdateImages} className="bg-white p-4 rounded shadow space-y-4">
-            <h3 className="font-semibold">Images</h3>
-            {currentImages.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {currentImages.map((filename) => (
-                  <div key={filename} className="border rounded overflow-hidden relative group">
+          <form onSubmit={handleUpdateImages} className="bg-white p-6 rounded-sm shadow-sm border border-gray-100 space-y-6">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Images</h3>
+            
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {currentImages.map((filename) => (
+                <div key={filename} className="relative group">
+                  <div className="w-full border rounded-sm overflow-hidden relative aspect-square hover:border-gray-400">
                     <img
                       src={filename.includes('cloudinary.com') ? filename : `/${filename}`}
                       alt={filename}
-                      className="w-full h-24 object-cover"
+                      className="w-full h-full object-contain bg-gray-50"
                       onError={(e) => (e.target.src = '/ErrorImage.png')}
                     />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(filename)}
-                      className="absolute top-1 right-1 bg-red-600 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      Remove
-                    </button>
                   </div>
-                ))}
-              </div>
-            )}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(filename)}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
 
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(e) => {
-                const files = Array.from(e.target.files || []).slice(0, 3);
-                setImages(files);
-              }}
-            />
+            <div className="pt-4 space-y-4">
+                <label className="border-2 border-dashed border-gray-200 rounded-sm w-32 h-32 flex flex-col items-center justify-center cursor-pointer hover:border-black hover:bg-gray-50 transition-all text-gray-400 hover:text-black">
+                  <svg className="h-6 w-6 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-center">Add Images</span>
+                    <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                        const files = Array.from(e.target.files || []).slice(0, 3);
+                        setImages(files);
+                    }}
+                    />
+                </label>
+                
+                {images.length > 0 && (
+                  <p className="text-xs text-gray-500">{images.length} new image(s) selected.</p>
+                )}
 
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded"
-              disabled={imageSaving}
-            >
-              {imageSaving ? 'Saving...' : 'Update Images'}
-            </button>
+                <button
+                type="submit"
+                className="bg-black text-white px-12 py-4 rounded-sm text-xs font-bold uppercase tracking-[0.2em] hover:bg-gray-800 transition-all disabled:bg-gray-400"
+                disabled={imageSaving}
+                >
+                {imageSaving ? 'Updating...' : 'Update Images'}
+                </button>
+            </div>
           </form>
         </>
       )}

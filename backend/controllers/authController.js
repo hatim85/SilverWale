@@ -17,21 +17,23 @@ export const signup = async (req, res, next) => {
         await newUser.save();
 
         const token = jwt.sign(
-            { userId: newUser._id, email: newUser.email },
+            { id: newUser._id, email: newUser.email },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: '1d' }
         );
 
-        res.status(201).json({
-            message: 'Signup successful',
-            token,
-            user: {
-                id: newUser._id,
-                username: newUser.username,
-                email: newUser.email,
-                phone: newUser.phone
-            }
-        });
+        const { password: pass, ...rest } = newUser._doc;
+        const expiryDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day
+
+        res
+            .status(201)
+            .cookie('access_token', token, {
+                httpOnly: true,
+                expires: expiryDate,
+                sameSite: 'lax',
+                secure: false // Set to true in production
+            })
+            .json(rest);
     } catch (error) {
         next(error);
     }
@@ -57,7 +59,7 @@ export const signin = async (req, res, next) => {
         const token = jwt.sign(
             { id: validUser._id, userType: validUser.userType },
             process.env.JWT_SECRET,
-            { expiresIn: '15m' }
+            { expiresIn: '1d' }
         );
 
         const { password: pass, ...rest } = validUser._doc;

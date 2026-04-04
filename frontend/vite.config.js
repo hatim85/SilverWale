@@ -8,7 +8,7 @@ dotenv.config();
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir:'dist',
+    outDir: 'dist',
     chunkSizeWarningLimit: 2000
   }
 });

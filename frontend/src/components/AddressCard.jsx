@@ -1,123 +1,282 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAddressesStart, fetchAddressesSuccess, fetchAddressesFailure, deleteAddressStart, deleteAddressSuccess, deleteAddressFailure } from '../redux/slices/addressSlice';
+import { addAddressStart, addAddressSuccess, addAddressFailure } from '../redux/slices/addressSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { FaTrash } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaTimes, FaPlus, FaCheck } from 'react-icons/fa';
 
 function AddressCard({ onAddressSelect }) {
     const dispatch = useDispatch();
-    const { addresses, loading, error } = useSelector(state => state.address);
+    const { addresses, loading } = useSelector(state => state.address);
     const { currentUser } = useSelector(state => state.user);
     const userId = currentUser._id;
+
     const [selectedAddress, setSelectedAddress] = useState(null);
-    const [displayAll, setDisplayAll] = useState(false);
+    const [showAll, setShowAll] = useState(false);
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [formData, setFormData] = useState({
+        fullName: '', addressLine1: '', addressLine2: '',
+        city: '', postalCode: '', country: '', phoneNumber: ''
+    });
 
     useEffect(() => {
         fetchAddress(userId);
     }, [userId]);
 
-    const fetchAddress = async (userId) => {
+    const fetchAddress = async (uid) => {
         dispatch(fetchAddressesStart());
         try {
-            const response = await fetch(`${import.meta.env.VITE_PORT}/api/user/address/${userId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch items');
-            }
-            const data = await response.json();
+            const res = await fetch(`${import.meta.env.VITE_PORT}/api/user/address/${uid}`);
+            if (!res.ok) throw new Error('Failed to fetch addresses');
+            const data = await res.json();
             dispatch(fetchAddressesSuccess(data));
-            // Select the most recently added address by default and notify parent
             if (data.length > 0) {
-                const first = data[0];
-                setSelectedAddress(first);
-                if (onAddressSelect) onAddressSelect(first);
+                setSelectedAddress(data[0]);
+                if (onAddressSelect) onAddressSelect(data[0]);
             }
-        } catch (error) {
-            dispatch(fetchAddressesFailure(error.message));
+        } catch (err) {
+            dispatch(fetchAddressesFailure(err.message));
         }
     };
 
-    const handleAddressDelete = async (addressId) => {
+    const handleSelect = (addr) => {
+        setSelectedAddress(addr);
+        if (onAddressSelect) onAddressSelect(addr);
+        setShowAll(false);
+    };
+
+    const handleDelete = async (addressId) => {
         dispatch(deleteAddressStart());
         try {
-            const response = await fetch(`${import.meta.env.VITE_PORT}/api/user/deleteaddress/${addressId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete address');
-            }
-
-            await response.json();
+            const res = await fetch(`${import.meta.env.VITE_PORT}/api/user/deleteaddress/${addressId}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to delete');
             dispatch(deleteAddressSuccess(addressId));
-            toast.success('Address deleted');
+            toast.success('Address removed');
+            if (selectedAddress?._id === addressId) {
+                setSelectedAddress(null);
+                if (onAddressSelect) onAddressSelect(null);
+            }
             fetchAddress(userId);
-        } catch (error) {
-            dispatch(deleteAddressFailure(error.message));
+        } catch (err) {
+            dispatch(deleteAddressFailure(err.message));
         }
     };
 
-    const handleAddressSelect = (address) => {
-        setSelectedAddress(address);
-        if (onAddressSelect) onAddressSelect(address);
+    const handleFormChange = (e) => {
+        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    const handleDisplayAll = () => {
-        setDisplayAll(true);
-        setSelectedAddress(null);
-        if (onAddressSelect) onAddressSelect(null);
+    const handleAddAddress = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        dispatch(addAddressStart());
+        try {
+            const res = await fetch(`${import.meta.env.VITE_PORT}/api/user/createaddress/${userId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            if (!res.ok) throw new Error('Failed to add address');
+            const data = await res.json();
+            dispatch(addAddressSuccess(data));
+            toast.success('Address added');
+            setShowAddForm(false);
+            setFormData({ fullName: '', addressLine1: '', addressLine2: '', city: '', postalCode: '', country: '', phoneNumber: '' });
+            fetchAddress(userId);
+        } catch (err) {
+            dispatch(addAddressFailure(err.message));
+            toast.error('Could not add address');
+        } finally {
+            setSaving(false);
+        }
     };
+
+    const formatAddress = (addr) =>
+        [addr.addressLine1, addr.addressLine2, addr.city, addr.postalCode, addr.country]
+            .filter(Boolean).join(', ');
 
     return (
-        <div className="bg-gray-100 p-6 rounded-lg shadow-md relative">
-            <h2 className="text-2xl font-bold mb-4">My Addresses</h2>
-            {loading && <p>Loading...</p>}
-            {error && <p className="text-red-600 mb-4">Error: {error}</p>}
-            <Link to='/addressform' className='absolute right-0 top-4'>
-                <button className="bg-blue-500 text-white rounded-md px-4 py-2 hover:bg-blue-700 transition duration-300">Add Address</button>
-            </Link>
-            {addresses.length === 0 && !loading && !error && <p>No address added</p>}
-            {selectedAddress ? (
-                <>
-                    <div className="bg-white p-4 rounded-lg shadow-md mb-4">
-                        <p className="font-semibold"><span className="font-bold">Full Name: </span>{selectedAddress.fullName}</p>
-                        <p><span className="font-bold">Address Line 1: </span>{selectedAddress.addressLine1}</p>
-                        {selectedAddress.addressLine2 && <p><span className="font-bold">Address Line 2: </span>{selectedAddress.addressLine2}</p>}
-                        <p><span className="font-bold">City: </span>{selectedAddress.city}</p>
-                        <p><span className="font-bold">Postal Code: </span>{selectedAddress.postalCode}</p>
-                        <p><span className="font-bold">Country: </span>{selectedAddress.country}</p>
-                        <p><span className="font-bold">Phone Number: </span>{selectedAddress.phoneNumber}</p>
+        <div className="space-y-6">
+            {loading && <p className="text-xs text-gray-400 uppercase tracking-widest animate-pulse">Loading addresses...</p>}
+
+            {/* Selected address display */}
+            {selectedAddress && !showAll && (
+                <div className="border border-black p-6 space-y-3 bg-gray-50/50">
+                    <div className="flex items-start justify-between">
+                        <div className="flex items-start space-x-3">
+                            <FaMapMarkerAlt className="text-black mt-0.5 flex-shrink-0" />
+                            <div className="space-y-1">
+                                <p className="text-[11px] font-bold uppercase tracking-widest text-black">{selectedAddress.fullName}</p>
+                                <p className="text-xs text-gray-500 leading-relaxed">{formatAddress(selectedAddress)}</p>
+                                <p className="text-xs text-gray-500">{selectedAddress.phoneNumber}</p>
+                            </div>
+                        </div>
+                        <span className="text-[8px] font-bold uppercase tracking-widest bg-black text-white px-2 py-1">Selected</span>
                     </div>
-                    <button className="bg-blue-500 text-white rounded-md px-4 py-2 hover:bg-blue-700 transition duration-300" onClick={handleDisplayAll}>Change</button>
-                </>
-            ) : displayAll ? (
-                <ul className="space-y-4">
-                    {addresses.map((address, key) => (
-                        <li key={key} className="bg-white relative p-4 rounded-lg shadow-md">
-                            <p className="font-semibold"><span className="font-bold">Full Name: </span>{address.fullName}</p>
-                            <p><span className="font-bold">Address Line 1: </span>{address.addressLine1}</p>
-                            {address.addressLine2 && <p><span className="font-bold">Address Line 2: </span>{address.addressLine2}</p>}
-                            <p><span className="font-bold">City: </span>{address.city}</p>
-                            <p><span className="font-bold">Postal Code: </span>{address.postalCode}</p>
-                            <p><span className="font-bold">Country: </span>{address.country}</p>
-                            <p><span className="font-bold">Phone Number: </span>{address.phoneNumber}</p>
-                            <button className="mt-2 bg-blue-500 text-white rounded-md px-4 py-2 hover:bg-blue-700 transition duration-300" onClick={() => handleAddressSelect(address)}>Select</button>
-                            <button className="mt-2 absolute right-4 top-4 rounded-md py-2" onClick={() => handleAddressDelete(address._id)}><FaTrash className='text-gray-600 hover:text-red-600 transition duration-300 h-5 w-5' /></button>
-                        </li>
+                    <button
+                        onClick={() => setShowAll(true)}
+                        className="text-[10px] font-bold uppercase tracking-widest border-b border-gray-400 text-gray-500 hover:text-black hover:border-black transition-all pb-0.5"
+                    >
+                        Change Address
+                    </button>
+                </div>
+            )}
+
+            {/* All addresses list */}
+            {showAll && (
+                <div className="space-y-3">
+                    {addresses.map((addr) => (
+                        <button
+                            key={addr._id}
+                            onClick={() => handleSelect(addr)}
+                            className={`w-full text-left p-5 border transition-all flex items-start justify-between group ${
+                                selectedAddress?._id === addr._id
+                                    ? 'border-black bg-gray-50'
+                                    : 'border-gray-200 hover:border-gray-400'
+                            }`}
+                        >
+                            <div className="flex items-start space-x-3 flex-1">
+                                <div className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                    selectedAddress?._id === addr._id ? 'border-black bg-black' : 'border-gray-300'
+                                }`}>
+                                    {selectedAddress?._id === addr._id && <FaCheck className="text-white text-[6px]" />}
+                                </div>
+                                <div className="space-y-0.5">
+                                    <p className="text-[11px] font-bold uppercase tracking-widest text-gray-900">{addr.fullName}</p>
+                                    <p className="text-xs text-gray-500">{formatAddress(addr)}</p>
+                                    <p className="text-xs text-gray-400">{addr.phoneNumber}</p>
+                                </div>
+                            </div>
+                            <span
+                                onClick={(e) => { e.stopPropagation(); handleDelete(addr._id); }}
+                                className="text-gray-300 hover:text-red-500 transition-colors ml-4 flex-shrink-0 p-1"
+                            >
+                                <FaTimes className="h-3 w-3" />
+                            </span>
+                        </button>
                     ))}
-                </ul>
-            ) : (
-                addresses.length > 0 && (
-                    <button className="bg-blue-500 text-white rounded-md px-4 py-2 hover:bg-blue-700 transition duration-300" onClick={handleDisplayAll}>Change</button>
-                )
+                </div>
+            )}
+
+            {/* No address state */}
+            {addresses.length === 0 && !loading && (
+                <div className="text-center py-8 border border-dashed border-gray-200">
+                    <FaMapMarkerAlt className="text-gray-200 h-8 w-8 mx-auto mb-3" />
+                    <p className="text-xs text-gray-400 uppercase tracking-widest">No saved addresses</p>
+                </div>
+            )}
+
+            {/* Add Address Button */}
+            <button
+                onClick={() => setShowAddForm(true)}
+                className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors group"
+            >
+                <div className="w-6 h-6 border border-gray-300 group-hover:border-black rounded-sm flex items-center justify-center transition-colors">
+                    <FaPlus className="h-2.5 w-2.5" />
+                </div>
+                <span>Add New Address</span>
+            </button>
+
+            {/* Inline Add Address Modal */}
+            {showAddForm && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAddForm(false)} />
+                    <div className="relative bg-white w-full max-w-lg mx-4 shadow-2xl animate-fadeIn overflow-y-auto max-h-[90vh]">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100">
+                            <h2 className="text-xl font-serif italic text-gray-800">New Delivery Address</h2>
+                            <button onClick={() => setShowAddForm(false)} className="text-gray-400 hover:text-black transition-colors">
+                                <FaTimes className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        {/* Modal Form */}
+                        <form onSubmit={handleAddAddress} className="px-8 py-6 space-y-5">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Full Name</label>
+                                <input
+                                    name="fullName" value={formData.fullName} onChange={handleFormChange}
+                                    placeholder="Recipient's full name" required
+                                    className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Phone</label>
+                                    <input
+                                        name="phoneNumber" value={formData.phoneNumber} onChange={handleFormChange}
+                                        placeholder="+91..." required
+                                        className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Postal Code</label>
+                                    <input
+                                        name="postalCode" value={formData.postalCode} onChange={handleFormChange}
+                                        placeholder="Pincode" required
+                                        className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Address Line 1</label>
+                                <input
+                                    name="addressLine1" value={formData.addressLine1} onChange={handleFormChange}
+                                    placeholder="House No., Building, Street" required
+                                    className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Address Line 2 (Optional)</label>
+                                <input
+                                    name="addressLine2" value={formData.addressLine2} onChange={handleFormChange}
+                                    placeholder="Locality, Landmark"
+                                    className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">City</label>
+                                    <input
+                                        name="city" value={formData.city} onChange={handleFormChange}
+                                        placeholder="City" required
+                                        className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Country</label>
+                                    <input
+                                        name="country" value={formData.country} onChange={handleFormChange}
+                                        placeholder="Country" required
+                                        className="w-full border-b border-gray-200 py-2 outline-none focus:border-black transition-colors bg-transparent text-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="pt-4 flex space-x-4">
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    className="flex-1 bg-black text-white py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-gray-800 transition-all disabled:bg-gray-400"
+                                >
+                                    {saving ? 'Saving...' : 'Save Address'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddForm(false)}
+                                    className="px-6 border border-gray-200 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black hover:border-black transition-all"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
         </div>
     );

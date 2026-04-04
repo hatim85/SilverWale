@@ -42,7 +42,7 @@ const addressSlice = createSlice({
             state.error = null;
         },
         deleteAddressSuccess(state, action) {
-            const deletedAddressId = action.payload; // Assuming action.payload is the ID of the address to be deleted
+            const deletedAddressId = action.payload;
             state.addresses = state.addresses.filter(address => address._id !== deletedAddressId);
             state.loading = false;
             state.error = null;
@@ -50,10 +50,18 @@ const addressSlice = createSlice({
         deleteAddressFailure(state, action) {
             state.loading = false;
             state.error = action.payload
+        },
+        swapDefaultAddress(state, action) {
+            const idx = action.payload; // index of the address to make default
+            if (idx > 0 && idx < state.addresses.length) {
+                const temp = state.addresses[0];
+                state.addresses[0] = state.addresses[idx];
+                state.addresses[idx] = temp;
+            }
         }
     }
 })
 
-export const { addAddressFailure, addAddressStart, addAddressSuccess, fetchAddressesFailure, fetchAddressesStart, fetchAddressesSuccess,deleteAddressFailure,deleteAddressStart,deleteAddressSuccess } = addressSlice.actions;
+export const { addAddressFailure, addAddressStart, addAddressSuccess, fetchAddressesFailure, fetchAddressesStart, fetchAddressesSuccess, deleteAddressFailure, deleteAddressStart, deleteAddressSuccess, swapDefaultAddress } = addressSlice.actions;
 
 export default addressSlice.reducer;
