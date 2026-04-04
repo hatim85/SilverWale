@@ -84,48 +84,48 @@ function Header() {
                     >
                         <FaBars className="h-4 w-4 md:h-6 md:w-6" />
                     </button>
-                    <div className="hidden md:flex flex-col items-start bg-gray-50 px-4 py-2 rounded-md border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-md hover:-translate-y-0.5 group">
-                        <div className="flex items-center text-xs md:text-sm text-gray-700 space-x-2 group-hover:text-black transition-colors">
+                    <div className="hidden md:flex flex-col items-start bg-gray-50 px-2 lg:px-4 py-1 lg:py-2 rounded-md border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-md hover:-translate-y-0.5 group">
+                        <div className="flex items-center text-xs md:text-sm text-gray-700 space-x-1 lg:space-x-2 group-hover:text-black transition-colors">
                             <FaPhoneAlt className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-400 group-hover:text-black" />
-                            <span className="tracking-[0.1em] font-bold">+91-9924559125</span>
+                            <span className="tracking-[0.05em] lg:tracking-[0.1em] font-bold">+91-9924559125</span>
                         </div>
-                        <p className="text-[7px] md:text-[8px] text-gray-400 uppercase tracking-widest font-bold mt-1 group-hover:text-gray-600 transition-colors">Inquiry & Support</p>
+                        <p className="text-[7px] md:text-[8px] text-gray-400 uppercase tracking-widest font-bold mt-0.5 lg:mt-1 group-hover:text-gray-600 transition-colors">Inquiry & Support</p>
                     </div>
                 </div>
 
                 {/* Center: Logo & Name Side-by-Side */}
                 <div className="flex-1 md:flex-[2] flex justify-center overflow-hidden px-1 md:px-4">
-                    <Link to="/" className="flex items-center group space-x-2 md:space-x-5">
+                    <Link to="/" className="flex items-center group space-x-2 md:space-x-3 lg:space-x-5">
                         <img 
                             src="/LOGO.png" 
                             alt="SilverWale Logo" 
-                            className="h-5 min-w-[15px] md:h-12 lg:h-16 w-auto object-contain transition-transform duration-500 group-hover:scale-105" 
+                            className="h-5 min-w-[15px] md:h-10 lg:h-16 w-auto object-contain transition-transform duration-500 group-hover:scale-105" 
                         />
-                        <span className="text-[12px] md:text-3xl lg:text-4xl font-serif tracking-widest md:tracking-[0.25em] text-black font-light uppercase leading-none border-l border-gray-100 pl-1.5 md:pl-5 whitespace-nowrap">
+                        <span className="text-[12px] md:text-2xl lg:text-4xl font-serif tracking-widest md:tracking-[0.15em] lg:tracking-[0.25em] text-black font-light uppercase leading-none border-l border-gray-100 pl-1.5 md:pl-3 lg:pl-5 whitespace-nowrap">
                             SilverWale
                         </span>
                     </Link>
                 </div>
 
                 {/* Right: Actions */}
-                <div className="flex items-center justify-end space-x-1 md:space-x-8 flex-shrink-0 md:flex-1">
+                <div className="flex items-center justify-end space-x-1 md:space-x-4 lg:space-x-8 flex-shrink-0 md:flex-1">
                     {/* Desktop Integrated Search Bar */}
-                    <form onSubmit={handleSearch} className="hidden md:flex items-center border-b border-gray-200 py-2 focus-within:border-black transition-colors mr-2 h-10">
+                    <form onSubmit={handleSearch} className="hidden lg:flex items-center border-b border-gray-200 py-2 focus-within:border-black transition-colors mr-2 h-10">
                         <input
                             type="text"
                             placeholder="SEARCH"
-                            className="bg-transparent text-[11px] tracking-[0.2em] outline-none w-24 lg:w-44 px-2 font-medium placeholder:text-gray-400 h-full"
+                            className="bg-transparent text-[11px] tracking-[0.2em] outline-none w-16 lg:w-44 px-2 font-medium placeholder:text-gray-400 h-full"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                         />
                         <button type="submit" className="text-gray-400 hover:text-black transition-colors h-full flex items-center px-1">
-                            <FaSearch className="h-4 w-4" />
+                            <FaSearch className="h-3 w-3 lg:h-4 lg:w-4" />
                         </button>
                     </form>
 
                     {/* Mobile Only: Small Search Icon toggle */}
                     <button
-                        className="md:hidden text-gray-800 hover:text-black transition-colors flex items-center h-10"
+                        className="lg:hidden text-gray-800 hover:text-black transition-colors flex items-center h-10"
                         onClick={() => setShowSearch(!showSearch)}
                     >
                         <FaSearch className="h-5 w-5 md:h-6 md:w-6" />
@@ -183,7 +183,7 @@ function Header() {
             {/* Mobile Search Bar - Visible below top row when search icon is clicked or by default on home? */}
             {/* Mobile Search Bar - Visible below top row when search icon is clicked and toggled */}
             {showSearch && (
-                <div className="md:hidden w-full px-4 py-2 bg-white border-b border-gray-50">
+                <div className="lg:hidden w-full px-4 py-2 bg-white border-b border-gray-50">
                     <form onSubmit={handleSearch} className="relative flex items-center">
                         <FaSearch className="absolute left-3 text-gray-400 h-4 w-4" />
                         <input
@@ -199,7 +199,7 @@ function Header() {
 
             {/* Bottom Nav Row (Desktop Only) */}
             <nav className="hidden lg:block w-full border-b border-gray-100">
-                <ul className="container mx-auto px-4 flex justify-center space-x-10 py-5 text-sm font-medium tracking-[0.2em] text-gray-700">
+                <ul className="container mx-auto px-4 flex justify-center space-x-4 lg:space-x-10 py-3 lg:py-5 text-[10px] lg:text-sm font-medium tracking-[0.2em] text-gray-700">
                     {navLinks.map((link) => (
                         <li key={link.name}>
                             <Link
