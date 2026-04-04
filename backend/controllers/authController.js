@@ -30,8 +30,8 @@ export const signup = async (req, res, next) => {
             .cookie('access_token', token, {
                 httpOnly: true,
                 expires: expiryDate,
-                sameSite: 'lax',
-                secure: false // Set to true in production
+                sameSite: 'none',
+                secure: true
             })
             .json(rest);
     } catch (error) {
@@ -70,8 +70,8 @@ export const signin = async (req, res, next) => {
             .cookie('access_token', token, {
                 httpOnly: true,
                 expires: expiryDate,
-                sameSite: 'lax',
-                secure: false // Set to true in production
+                sameSite: 'none',
+                secure: true
             })
             .json(rest);
     }
